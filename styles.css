@@ -1,0 +1,65 @@
+/**
+ * Base Styles
+ */
+:root {
+    --main-color: #FF0000; /* Red */
+    --secondary-color: #FFFFFF; /* White */
+    --font-family: 'Arial', sans-serif;
+}
+
+body {
+    font-family: var(--font-family);
+    margin: 0;
+    padding: 0;
+    color: var(--secondary-color);
+    background-color: var(--main-color);
+}
+
+/**
+ * Responsive Layout
+ */
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: auto;
+}
+
+.header, .footer {
+    background-color: var(--main-color);
+    padding: 20px;
+    text-align: center;
+}
+
+.header h1, .footer p {
+    margin: 0;
+}
+
+/**
+ * Component Styles
+ */
+.button {
+    background-color: var(--main-color);
+    color: var(--secondary-color);
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.button:hover {
+    opacity: 0.8;
+}
+
+/**
+ * Media Queries for Responsiveness
+ */
+@media (max-width: 768px) {
+    .header, .footer {
+        padding: 15px;
+    }
+
+    .button {
+        width: 100%;
+        padding: 15px;
+    }
+}
