@@ -98,7 +98,7 @@ logoutBtn.addEventListener('click', () => {
 });
 
 // Admin: Assign Routes and Rank
-// Ha nincs dokumentum, létrehozza UID alapján
+// UID alapján létrehoz, ha nincs dokumentum
 document.getElementById('assign-btn').addEventListener('click', async () => {
     const uid = userSelect.value;
     const route = document.getElementById('route').value;
@@ -108,12 +108,12 @@ document.getElementById('assign-btn').addEventListener('click', async () => {
         const userRef = db.collection('users').doc(uid);
         const doc = await userRef.get();
         if(!doc.exists) {
-            await userRef.set({ routes: [route], rank: rank });
+            await userRef.set({ routes: route ? [route] : [], rank: rank || '' });
         } else {
-            await userRef.update({
-                routes: firebase.firestore.FieldValue.arrayUnion(route),
-                rank: rank
-            });
+            const updates = {};
+            if(route) updates.routes = firebase.firestore.FieldValue.arrayUnion(route);
+            if(rank) updates.rank = rank;
+            await userRef.update(updates);
         }
         alert('Hozzárendelve!');
         loadUsers();
@@ -140,10 +140,12 @@ async function loadUsers() {
     const list = document.getElementById('user-list');
     userSelect.innerHTML = '';
     list.innerHTML = '';
-    const snapshot = await db.collection('users').get();
+
+    const snapshot = await db.collection('users').orderBy('rank').get();
     snapshot.forEach(doc => {
+        const data = doc.data();
         const li = document.createElement('li');
-        li.textContent = `UID: ${doc.id} - Rang: ${doc.data().rank}`;
+        li.textContent = `UID: ${doc.id} - Rang: ${data.rank || 'Nincs rang'}`;
         list.appendChild(li);
 
         const option = document.createElement('option');
@@ -160,16 +162,15 @@ async function loadMyData(uid) {
         const data = doc.data();
         const routesEl = document.getElementById('my-routes');
         routesEl.innerHTML = '';
-        data.routes.forEach(r => {
+        (data.routes || []).forEach(r => {
             const li = document.createElement('li');
             li.textContent = r;
             routesEl.appendChild(li);
         });
-        document.getElementById('my-rank').textContent = data.rank;
+        document.getElementById('my-rank').textContent = data.rank || 'Nincs rang';
     }
 }
 </script>
 
 </body>
 </html>
-
