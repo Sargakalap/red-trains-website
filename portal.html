@@ -21,7 +21,7 @@
 
 <main class="p-8">
     <h1 class="text-2xl font-bold mb-4">Admin Portál</h1>
-    
+
     <div id="auth-section" class="mb-6">
         <h2 class="text-xl font-semibold mb-2">Bejelentkezés</h2>
         <input type="email" id="email" placeholder="Email" class="border p-2 mb-2 w-full">
@@ -31,13 +31,8 @@
     </div>
 
     <div id="admin-section" class="hidden">
-        <h2 class="text-xl font-semibold mb-2">Fiókok kezelése</h2>
-        <input type="text" id="new-user-email" placeholder="Új felhasználó email" class="border p-2 mb-2 w-full">
-        <input type="password" id="new-user-password" placeholder="Első jelszó" class="border p-2 mb-2 w-full">
-        <button id="create-user-btn" class="bg-green-600 text-white p-2 rounded mb-4">Fiók létrehozása</button>
-
         <h2 class="text-xl font-semibold mb-2">Menetek és Rangok</h2>
-        <input type="text" id="user-id" placeholder="Felhasználó ID" class="border p-2 mb-2 w-full">
+        <select id="user-id" class="border p-2 mb-2 w-full"></select>
         <input type="text" id="route" placeholder="Menet" class="border p-2 mb-2 w-full">
         <input type="text" id="rank" placeholder="Rang" class="border p-2 mb-2 w-full">
         <button id="assign-btn" class="bg-purple-600 text-white p-2 rounded mb-2">Hozzárendelés</button>
@@ -55,7 +50,6 @@
 </main>
 
 <script>
-// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyCWD3P7MnyW6dXg-bRXt3-q_NKzZKfuWYA",
   authDomain: "red-trains.firebaseapp.com",
@@ -69,10 +63,12 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-const ADMIN_UIDS = ['Icxatttk0eTbALCDb5MjraZvyIX2', 'ADMIN_UID_2']; // Csak ezek az UID-k adminok
+const ADMIN_UIDS = ['ADMIN_UID_1', 'ADMIN_UID_2'];
 
 const loginBtn = document.getElementById('login-btn');
 const logoutBtn = document.getElementById('logout-btn');
+const userSelect = document.getElementById('user-id');
+
 loginBtn.addEventListener('click', () => {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
@@ -101,86 +97,79 @@ logoutBtn.addEventListener('click', () => {
     });
 });
 
-// Admin: Create User
-document.getElementById('create-user-btn').addEventListener('click', () => {
-    const email = document.getElementById('new-user-email').value;
-    const password = document.getElementById('new-user-password').value;
-    auth.createUserWithEmailAndPassword(email, password)
-        .then(userCredential => {
-            const uid = userCredential.user.uid;
-            db.collection('users').doc(uid).set({
-                email: email,
-                routes: [],
-                rank: '',
-                firstLogin: true // első belépéskor jelszócsere
-            });
-            alert('Felhasználó létrehozva! Az első jelszó: ' + password);
-            loadUsers();
-        })
-        .catch(err => alert(err.message));
-});
-
 // Admin: Assign Routes and Rank
-document.getElementById('assign-btn').addEventListener('click', () => {
-    const uid = document.getElementById('user-id').value;
+// Ha nincs dokumentum, létrehozza UID alapján
+document.getElementById('assign-btn').addEventListener('click', async () => {
+    const uid = userSelect.value;
     const route = document.getElementById('route').value;
     const rank = document.getElementById('rank').value;
-    db.collection('users').doc(uid).update({
-        routes: firebase.firestore.FieldValue.arrayUnion(route),
-        rank: rank
-    })
-    .then(() => {
+    if(!uid) { alert('Válassz felhasználót!'); return; }
+    try {
+        const userRef = db.collection('users').doc(uid);
+        const doc = await userRef.get();
+        if(!doc.exists) {
+            await userRef.set({ routes: [route], rank: rank });
+        } else {
+            await userRef.update({
+                routes: firebase.firestore.FieldValue.arrayUnion(route),
+                rank: rank
+            });
+        }
         alert('Hozzárendelve!');
         loadUsers();
-    })
-    .catch(err => alert(err.message));
+    } catch(err) {
+        alert(err.message);
+    }
 });
 
 // Admin: Delete User
-document.getElementById('delete-btn').addEventListener('click', () => {
-    const uid = document.getElementById('user-id').value;
-    db.collection('users').doc(uid).delete()
-    .then(() => alert('Felhasználó törölve!'))
-    .catch(err => alert(err.message));
+document.getElementById('delete-btn').addEventListener('click', async () => {
+    const uid = userSelect.value;
+    if(!uid) { alert('Válassz felhasználót!'); return; }
+    try {
+        await db.collection('users').doc(uid).delete();
+        alert('Felhasználó törölve!');
+        loadUsers();
+    } catch(err) {
+        alert(err.message);
+    }
 });
 
 // Load Users List
-function loadUsers() {
+async function loadUsers() {
     const list = document.getElementById('user-list');
+    userSelect.innerHTML = '';
     list.innerHTML = '';
-    db.collection('users').get().then(snapshot => {
-        snapshot.forEach(doc => {
-            const li = document.createElement('li');
-            li.textContent = `UID: ${doc.id} - Email: ${doc.data().email} - Rang: ${doc.data().rank}`;
-            list.appendChild(li);
-        });
+    const snapshot = await db.collection('users').get();
+    snapshot.forEach(doc => {
+        const li = document.createElement('li');
+        li.textContent = `UID: ${doc.id} - Rang: ${doc.data().rank}`;
+        list.appendChild(li);
+
+        const option = document.createElement('option');
+        option.value = doc.id;
+        option.textContent = `${doc.id}`;
+        userSelect.appendChild(option);
     });
 }
 
 // Load own data
-function loadMyData(uid) {
-    db.collection('users').doc(uid).get().then(doc => {
-        if(doc.exists){
-            const data = doc.data();
-            const routesEl = document.getElementById('my-routes');
-            routesEl.innerHTML = '';
-            data.routes.forEach(r => {
-                const li = document.createElement('li');
-                li.textContent = r;
-                routesEl.appendChild(li);
-            });
-            document.getElementById('my-rank').textContent = data.rank;
-            if(data.firstLogin){
-                const newPass = prompt('Első belépés: kérlek add meg az új jelszavad');
-                auth.currentUser.updatePassword(newPass).then(()=>{
-                    db.collection('users').doc(uid).update({firstLogin:false});
-                    alert('Jelszó frissítve!');
-                });
-            }
-        }
-    });
+async function loadMyData(uid) {
+    const doc = await db.collection('users').doc(uid).get();
+    if(doc.exists){
+        const data = doc.data();
+        const routesEl = document.getElementById('my-routes');
+        routesEl.innerHTML = '';
+        data.routes.forEach(r => {
+            const li = document.createElement('li');
+            li.textContent = r;
+            routesEl.appendChild(li);
+        });
+        document.getElementById('my-rank').textContent = data.rank;
+    }
 }
 </script>
 
 </body>
 </html>
+
