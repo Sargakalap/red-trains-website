@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RT Vasút Portál</title>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="h-full bg-gray-100">
@@ -14,162 +11,617 @@
 <nav class="bg-blue-800 p-4 text-white flex justify-between">
     <div class="text-xl font-bold">RT Vasút</div>
     <ul class="flex space-x-4">
-        <li><a href="index.html" class="hover:underline">Főoldal</a></li>
-        <li><a href="portal.html" class="hover:underline">Portál</a></li>
+        <li><a href="#" class="hover:underline">Főoldal</a></li>
+        <li><a href="#" class="hover:underline">Portál</a></li>
     </ul>
 </nav>
 
 <main class="p-8">
     <h1 class="text-2xl font-bold mb-4">Admin Portál</h1>
+    
+    <!-- Debug info -->
+    <div id="debug-info" class="bg-yellow-100 border border-yellow-400 p-4 mb-4 rounded">
+        <p class="font-semibold">Debug Info:</p>
+        <p id="firebase-status">REST API inicializálás...</p>
+        <p id="auth-status">Auth állapot: Ellenőrzés...</p>
+    </div>
 
     <div id="auth-section" class="mb-6">
         <h2 class="text-xl font-semibold mb-2">Bejelentkezés</h2>
-        <input type="email" id="email" placeholder="Email" class="border p-2 mb-2 w-full">
-        <input type="password" id="password" placeholder="Jelszó" class="border p-2 mb-2 w-full">
-        <button id="login-btn" class="bg-blue-600 text-white p-2 rounded">Bejelentkezés</button>
-        <button id="logout-btn" class="bg-red-600 text-white p-2 rounded hidden">Kijelentkezés</button>
+        <input type="email" id="email" placeholder="Email" class="border p-2 mb-2 w-full rounded" value="">
+        <input type="password" id="password" placeholder="Jelszó" class="border p-2 mb-2 w-full rounded" value="">
+        <button id="login-btn" class="bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Bejelentkezés</button>
+        <button id="logout-btn" class="bg-red-600 text-white p-2 rounded hover:bg-red-700 hidden ml-2">Kijelentkezés</button>
+        <p class="text-sm text-gray-600 mt-2">Teszt: test@test.com / test123456</p>
     </div>
 
     <div id="admin-section" class="hidden">
-        <h2 class="text-xl font-semibold mb-2">Menetek és Rangok</h2>
-        <select id="user-id" class="border p-2 mb-2 w-full"></select>
-        <input type="text" id="route" placeholder="Menet" class="border p-2 mb-2 w-full">
-        <input type="text" id="rank" placeholder="Rang" class="border p-2 mb-2 w-full">
-        <button id="assign-btn" class="bg-purple-600 text-white p-2 rounded mb-2">Hozzárendelés</button>
-        <button id="delete-btn" class="bg-red-600 text-white p-2 rounded">Fiók törlése</button>
+        <h2 class="text-xl font-semibold mb-2">Új Felhasználó Létrehozása</h2>
+        <input type="email" id="new-user-email" placeholder="Új Email" class="border p-2 mb-2 w-full rounded">
+        <input type="password" id="new-user-password" placeholder="Új Jelszó" class="border p-2 mb-2 w-full rounded">
+        <button id="create-user-btn" class="bg-green-600 text-white p-2 rounded mb-4 hover:bg-green-700">Létrehozás</button>
+
+        <h2 class="text-xl font-semibold mb-2">Shift és Rang Hozzárendelés</h2>
+        <select id="user-id" class="border p-2 mb-2 w-full rounded bg-white"></select>
+        <input type="text" id="route" placeholder="Menet/Shift (pl. Budapest-Debrecen)" class="border p-2 mb-2 w-full rounded">
+        <input type="date" id="date" class="border p-2 mb-2 w-full rounded">
+        <input type="text" id="rank" placeholder="Rang (pl. Mozdonyvezető)" class="border p-2 mb-2 w-full rounded">
+        <button id="assign-btn" class="bg-purple-600 text-white p-2 rounded mb-2 hover:bg-purple-700">Hozzárendelés</button>
+        <button id="delete-btn" class="bg-red-600 text-white p-2 rounded hover:bg-red-700 ml-2">Fiók törlése</button>
 
         <h2 class="text-xl font-semibold mt-6 mb-2">Felhasználói lista</h2>
-        <ul id="user-list" class="border p-2 max-h-64 overflow-y-auto"></ul>
+        <ul id="user-list" class="border p-2 max-h-64 overflow-y-auto bg-white rounded"></ul>
     </div>
 
     <div id="user-section" class="hidden">
         <h2 class="text-xl font-semibold mb-2">Beosztásaim</h2>
-        <ul id="my-routes" class="border p-2 max-h-64 overflow-y-auto"></ul>
-        <p class="mt-2 font-semibold">Rang: <span id="my-rank"></span></p>
+        <ul id="my-shifts" class="border p-2 max-h-64 overflow-y-auto bg-white rounded mb-4"></ul>
+        <p class="mt-2 font-semibold">Rang: <span id="my-rank" class="text-blue-600"></span></p>
+
+        <h2 class="text-xl font-semibold mt-6 mb-2">Üzenet az Adminoknak</h2>
+        <textarea id="message-text" placeholder="Üzenet..." class="border p-2 mb-2 w-full h-24 rounded"></textarea>
+        <button id="send-message-btn" class="bg-green-600 text-white p-2 rounded hover:bg-green-700">Küldés</button>
     </div>
 </main>
 
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyCWD3P7MnyW6dXg-bRXt3-q_NKzZKfuWYA",
-  authDomain: "red-trains.firebaseapp.com",
-  projectId: "red-trains",
-  storageBucket: "red-trains.firebasestorage.app",
-  messagingSenderId: "1053066929936",
-  appId: "1:1053066929936:web:2034b7881af7c7febce795",
-  measurementId: "G-5420S3F705"
-};
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-
-const ADMIN_UIDS = ['Icxatttk0eTbALCDb5MjraZvyIX2', 'ADMIN_UID_2'];
-
-const loginBtn = document.getElementById('login-btn');
-const logoutBtn = document.getElementById('logout-btn');
-const userSelect = document.getElementById('user-id');
-
-loginBtn.addEventListener('click', () => {
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    auth.signInWithEmailAndPassword(email, password)
-        .then(userCredential => {
-            const uid = userCredential.user.uid;
-            document.getElementById('auth-section').classList.add('hidden');
-            logoutBtn.classList.remove('hidden');
-            if(ADMIN_UIDS.includes(uid)) {
-                document.getElementById('admin-section').classList.remove('hidden');
-                loadUsers();
-            } else {
-                document.getElementById('user-section').classList.remove('hidden');
-                loadMyData(uid);
-            }
-        })
-        .catch(err => alert(err.message));
-});
-
-logoutBtn.addEventListener('click', () => {
-    auth.signOut().then(() => {
-        document.getElementById('auth-section').classList.remove('hidden');
-        document.getElementById('admin-section').classList.add('hidden');
-        document.getElementById('user-section').classList.add('hidden');
-        logoutBtn.classList.add('hidden');
-    });
-});
-
-// Admin: Assign Routes and Rank
-// UID alapján létrehoz, ha nincs dokumentum
-document.getElementById('assign-btn').addEventListener('click', async () => {
-    const uid = userSelect.value;
-    const route = document.getElementById('route').value;
-    const rank = document.getElementById('rank').value;
-    if(!uid) { alert('Válassz felhasználót!'); return; }
-    try {
-        const userRef = db.collection('users').doc(uid);
-        const doc = await userRef.get();
-        if(!doc.exists) {
-            await userRef.set({ routes: route ? [route] : [], rank: rank || '' });
-        } else {
-            const updates = {};
-            if(route) updates.routes = firebase.firestore.FieldValue.arrayUnion(route);
-            if(rank) updates.rank = rank;
-            await userRef.update(updates);
+    console.log('Script started - REST API mode');
+    
+    // Firebase konfiguráció
+    const API_KEY = "AIzaSyCWD3P7MnyW6dXg-bRXt3-q_NKzZKfuWYA";
+    const PROJECT_ID = "red-trains";
+    const USERS_COLLECTION = 'users collection';
+    
+    // Global state
+    let currentUser = null;
+    let idToken = null;
+    
+    // Debug elemek
+    const debugStatus = document.getElementById('firebase-status');
+    const authStatusEl = document.getElementById('auth-status');
+    
+    // DOM elemek
+    const authSection = document.getElementById('auth-section');
+    const loginBtn = document.getElementById('login-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+    const adminSection = document.getElementById('admin-section');
+    const userSection = document.getElementById('user-section');
+    const userSelect = document.getElementById('user-id');
+    const routeInput = document.getElementById('route');
+    const dateInput = document.getElementById('date');
+    const rankInput = document.getElementById('rank');
+    const assignBtn = document.getElementById('assign-btn');
+    const deleteBtn = document.getElementById('delete-btn');
+    const userList = document.getElementById('user-list');
+    const myShifts = document.getElementById('my-shifts');
+    const myRank = document.getElementById('my-rank');
+    const newUserEmail = document.getElementById('new-user-email');
+    const newUserPassword = document.getElementById('new-user-password');
+    const createUserBtn = document.getElementById('create-user-btn');
+    const messageText = document.getElementById('message-text');
+    const sendMessageBtn = document.getElementById('send-message-btn');
+    
+    debugStatus.textContent = 'REST API inicializálva ✓';
+    debugStatus.className = 'text-green-600';
+    
+    // Check stored auth
+    const storedAuth = localStorage.getItem('rtVasutAuth');
+    if (storedAuth) {
+        try {
+            const authData = JSON.parse(storedAuth);
+            currentUser = authData;
+            idToken = authData.idToken;
+            handleAuthStateChange();
+        } catch (e) {
+            localStorage.removeItem('rtVasutAuth');
         }
-        alert('Hozzárendelve!');
-        loadUsers();
-    } catch(err) {
-        alert(err.message);
     }
-});
-
-// Admin: Delete User
-document.getElementById('delete-btn').addEventListener('click', async () => {
-    const uid = userSelect.value;
-    if(!uid) { alert('Válassz felhasználót!'); return; }
-    try {
-        await db.collection('users').doc(uid).delete();
-        alert('Felhasználó törölve!');
-        loadUsers();
-    } catch(err) {
-        alert(err.message);
-    }
-});
-
-// Load Users List
-async function loadUsers() {
-    const list = document.getElementById('user-list');
-    userSelect.innerHTML = '';
-    list.innerHTML = '';
-
-    const snapshot = await db.collection('users').orderBy('rank').get();
-    snapshot.forEach(doc => {
-        const data = doc.data();
-        const li = document.createElement('li');
-        li.textContent = `UID: ${doc.id} - Rang: ${data.rank || 'Nincs rang'}`;
-        list.appendChild(li);
-
-        const option = document.createElement('option');
-        option.value = doc.id;
-        option.textContent = `${doc.id}`;
-        userSelect.appendChild(option);
-    });
-}
-
-// Load own data
-async function loadMyData(uid) {
-    const doc = await db.collection('users').doc(uid).get();
-    if(doc.exists){
-        const data = doc.data();
-        const routesEl = document.getElementById('my-routes');
-        routesEl.innerHTML = '';
-        (data.routes || []).forEach(r => {
-            const li = document.createElement('li');
-            li.textContent = r;
-            routesEl.appendChild(li);
+    
+    // Firebase Auth REST API - Login
+    async function signIn(email, password) {
+        const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${API_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email,
+                password,
+                returnSecureToken: true
+            })
         });
-        document.getElementById('my-rank').textContent = data.rank || 'Nincs rang';
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error.message);
+        }
+        
+        return await response.json();
     }
-}
+    
+    // Firebase Auth REST API - Sign Up
+    async function signUp(email, password) {
+        const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${API_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email,
+                password,
+                returnSecureToken: true
+            })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error.message);
+        }
+        
+        return await response.json();
+    }
+    
+    // Firestore REST API - Get Document
+    async function getDocument(path) {
+        const response = await fetch(`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/${path}`);
+        
+        if (!response.ok) {
+            if (response.status === 404) return null;
+            throw new Error('Failed to get document');
+        }
+        
+        return await response.json();
+    }
+    
+    // Firestore REST API - Create/Update Document
+    async function setDocument(path, data) {
+        const firestoreData = convertToFirestoreFormat(data);
+        
+        const response = await fetch(`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/${path}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fields: firestoreData })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to set document');
+        }
+        
+        return await response.json();
+    }
+    
+    // Firestore REST API - List Documents
+    async function listDocuments(collectionPath) {
+        const response = await fetch(`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/${collectionPath}`);
+        
+        if (!response.ok) {
+            if (response.status === 404) return { documents: [] };
+            throw new Error('Failed to list documents');
+        }
+        
+        const result = await response.json();
+        return result.documents || [];
+    }
+    
+    // Firestore REST API - Delete Document
+    async function deleteDocument(path) {
+        const response = await fetch(`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/${path}`, {
+            method: 'DELETE'
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to delete document');
+        }
+    }
+    
+    // Convert data to Firestore format
+    function convertToFirestoreFormat(data) {
+        const result = {};
+        for (const [key, value] of Object.entries(data)) {
+            if (value === null || value === undefined) continue;
+            
+            if (typeof value === 'string') {
+                result[key] = { stringValue: value };
+            } else if (typeof value === 'number') {
+                result[key] = { integerValue: value };
+            } else if (typeof value === 'boolean') {
+                result[key] = { booleanValue: value };
+            } else if (Array.isArray(value)) {
+                result[key] = {
+                    arrayValue: {
+                        values: value.map(item => {
+                            if (typeof item === 'object') {
+                                return { mapValue: { fields: convertToFirestoreFormat(item) } };
+                            }
+                            return { stringValue: String(item) };
+                        })
+                    }
+                };
+            } else if (typeof value === 'object') {
+                result[key] = { mapValue: { fields: convertToFirestoreFormat(value) } };
+            }
+        }
+        return result;
+    }
+    
+    // Convert Firestore format to normal data
+    function convertFromFirestoreFormat(fields) {
+        if (!fields) return {};
+        
+        const result = {};
+        for (const [key, value] of Object.entries(fields)) {
+            if (value.stringValue !== undefined) {
+                result[key] = value.stringValue;
+            } else if (value.integerValue !== undefined) {
+                result[key] = parseInt(value.integerValue);
+            } else if (value.booleanValue !== undefined) {
+                result[key] = value.booleanValue;
+            } else if (value.arrayValue) {
+                result[key] = (value.arrayValue.values || []).map(item => {
+                    if (item.mapValue) {
+                        return convertFromFirestoreFormat(item.mapValue.fields);
+                    }
+                    return item.stringValue || item.integerValue || item.booleanValue;
+                });
+            } else if (value.mapValue) {
+                result[key] = convertFromFirestoreFormat(value.mapValue.fields);
+            }
+        }
+        return result;
+    }
+    
+    // Handle auth state change
+    async function handleAuthStateChange() {
+        if (currentUser) {
+            authStatusEl.textContent = `Auth állapot: Bejelentkezve mint ${currentUser.email} ✓`;
+            authStatusEl.className = 'text-green-600';
+            
+            authSection.classList.add('hidden');
+            logoutBtn.classList.remove('hidden');
+            
+            try {
+                const userDocPath = `${USERS_COLLECTION}/${currentUser.localId}`;
+                const userDoc = await getDocument(userDocPath);
+                
+                if (!userDoc) {
+                    await setDocument(userDocPath, {
+                        email: currentUser.email,
+                        shifts: [],
+                        rank: '',
+                        isAdmin: false
+                    });
+                }
+                
+                const userData = userDoc ? convertFromFirestoreFormat(userDoc.fields) : { isAdmin: false };
+                const isAdmin = userData.isAdmin === true;
+                
+                if (isAdmin) {
+                    adminSection.classList.remove('hidden');
+                    userSection.classList.add('hidden');
+                    loadUsers();
+                } else {
+                    userSection.classList.remove('hidden');
+                    adminSection.classList.add('hidden');
+                    loadMyData(currentUser.localId);
+                }
+            } catch (err) {
+                console.error('Error loading user data:', err);
+                alert('Hiba a felhasználói adatok betöltésekor: ' + err.message);
+            }
+        } else {
+            authStatusEl.textContent = 'Auth állapot: Nincs bejelentkezve';
+            authStatusEl.className = 'text-gray-600';
+            
+            authSection.classList.remove('hidden');
+            adminSection.classList.add('hidden');
+            userSection.classList.add('hidden');
+            logoutBtn.classList.add('hidden');
+        }
+    }
+    
+    // Login
+    loginBtn.addEventListener('click', async () => {
+        console.log('Login button clicked');
+        
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        
+        if (!email || !password) {
+            alert('Kérlek add meg az email címet és a jelszót!');
+            return;
+        }
+        
+        loginBtn.disabled = true;
+        loginBtn.textContent = 'Bejelentkezés...';
+        
+        try {
+            const result = await signIn(email, password);
+            currentUser = result;
+            idToken = result.idToken;
+            
+            localStorage.setItem('rtVasutAuth', JSON.stringify(result));
+            
+            await handleAuthStateChange();
+        } catch (err) {
+            console.error('Login error:', err);
+            
+            let errorMsg = 'Bejelentkezési hiba: ';
+            
+            if (err.message.includes('INVALID_PASSWORD')) {
+                errorMsg += 'Helytelen jelszó';
+            } else if (err.message.includes('EMAIL_NOT_FOUND')) {
+                errorMsg += 'Nincs ilyen felhasználó. Először hozd létre a fiókot!';
+            } else if (err.message.includes('USER_DISABLED')) {
+                errorMsg += 'Ez a fiók le lett tiltva';
+            } else if (err.message.includes('TOO_MANY_ATTEMPTS')) {
+                errorMsg += 'Túl sok sikertelen próbálkozás. Próbáld később.';
+            } else {
+                errorMsg += err.message;
+            }
+            
+            alert(errorMsg);
+        } finally {
+            loginBtn.disabled = false;
+            loginBtn.textContent = 'Bejelentkezés';
+        }
+    });
+    
+    // Logout
+    logoutBtn.addEventListener('click', () => {
+        currentUser = null;
+        idToken = null;
+        localStorage.removeItem('rtVasutAuth');
+        handleAuthStateChange();
+    });
+    
+    // Create user (admin)
+    createUserBtn.addEventListener('click', async () => {
+        const email = newUserEmail.value.trim();
+        const password = newUserPassword.value;
+        
+        if (!email || !password) {
+            alert('Adj meg emailt és jelszót!');
+            return;
+        }
+        
+        try {
+            const result = await signUp(email, password);
+            const uid = result.localId;
+            
+            await setDocument(`${USERS_COLLECTION}/${uid}`, {
+                email: email,
+                shifts: [{
+                    route: "Budapest-Debrecen",
+                    date: "2025-12-01",
+                    status: "pending"
+                }],
+                rank: '',
+                isAdmin: false
+            });
+            
+            alert('User létrehozva!');
+            newUserEmail.value = '';
+            newUserPassword.value = '';
+            loadUsers();
+        } catch (err) {
+            console.error('User creation error:', err);
+            alert('Hiba: ' + err.message);
+        }
+    });
+    
+    // Load users (admin)
+    async function loadUsers() {
+        try {
+            userSelect.innerHTML = '<option value="">Válassz felhasználót...</option>';
+            userList.innerHTML = '';
+            
+            const docs = await listDocuments(USERS_COLLECTION);
+            
+            if (docs.length === 0) {
+                userList.innerHTML = '<li class="text-gray-500">Nincs még felhasználó</li>';
+                return;
+            }
+            
+            docs.forEach(doc => {
+                const data = convertFromFirestoreFormat(doc.fields);
+                const uid = doc.name.split('/').pop();
+                
+                const li = document.createElement('li');
+                li.className = 'p-2 border-b';
+                li.textContent = `Email: ${data.email || 'N/A'} - Rang: ${data.rank || 'Nincs'} - Admin: ${data.isAdmin ? 'Igen' : 'Nem'}`;
+                userList.appendChild(li);
+                
+                const option = document.createElement('option');
+                option.value = uid;
+                option.textContent = data.email || uid;
+                userSelect.appendChild(option);
+            });
+        } catch (err) {
+            console.error('Load users error:', err);
+            userList.innerHTML = '<li class="text-red-500">Hiba a betöltéskor</li>';
+        }
+    }
+    
+    // Assign shift/rank (admin)
+    assignBtn.addEventListener('click', async () => {
+        const uid = userSelect.value;
+        const route = routeInput.value.trim();
+        const date = dateInput.value;
+        const rank = rankInput.value.trim();
+        
+        if (!uid) {
+            alert('Válassz felhasználót!');
+            return;
+        }
+        
+        if (!route && !date && !rank) {
+            alert('Adj meg legalább egy adatot!');
+            return;
+        }
+        
+        try {
+            const userDocPath = `${USERS_COLLECTION}/${uid}`;
+            const userDoc = await getDocument(userDocPath);
+            const userData = userDoc ? convertFromFirestoreFormat(userDoc.fields) : { shifts: [], rank: '', email: 'unknown' };
+            
+            if (route && date) {
+                userData.shifts.push({
+                    route,
+                    date,
+                    status: 'pending'
+                });
+            }
+            
+            if (rank) {
+                userData.rank = rank;
+            }
+            
+            await setDocument(userDocPath, userData);
+            
+            alert('Hozzárendelve!');
+            routeInput.value = '';
+            dateInput.value = '';
+            rankInput.value = '';
+            loadUsers();
+        } catch (err) {
+            console.error('Assignment error:', err);
+            alert('Hiba: ' + err.message);
+        }
+    });
+    
+    // Delete user (admin)
+    deleteBtn.addEventListener('click', async () => {
+        const uid = userSelect.value;
+        
+        if (!uid) {
+            alert('Válassz felhasználót!');
+            return;
+        }
+        
+        if (!confirm('Biztosan törölni szeretnéd ezt a felhasználót?')) {
+            return;
+        }
+        
+        try {
+            await deleteDocument(`${USERS_COLLECTION}/${uid}`);
+            alert('Felhasználó törölve!');
+            loadUsers();
+        } catch (err) {
+            console.error('Delete error:', err);
+            alert('Hiba: ' + err.message);
+        }
+    });
+    
+    // Load my data (user)
+    async function loadMyData(uid) {
+        try {
+            const userDoc = await getDocument(`${USERS_COLLECTION}/${uid}`);
+            
+            if (userDoc) {
+                const data = convertFromFirestoreFormat(userDoc.fields);
+                
+                myShifts.innerHTML = '';
+                const shifts = data.shifts || [];
+                
+                if (shifts.length === 0) {
+                    myShifts.innerHTML = '<li class="text-gray-500">Nincs még beosztásod</li>';
+                } else {
+                    shifts.forEach((shift, index) => {
+                        const li = document.createElement('li');
+                        li.className = 'p-2 border-b flex justify-between items-center';
+                        
+                        const info = document.createElement('span');
+                        info.textContent = `${shift.route} - ${shift.date} - Státusz: ${shift.status}`;
+                        li.appendChild(info);
+                        
+                        const btnContainer = document.createElement('div');
+                        btnContainer.className = 'flex gap-2';
+                        
+                        const statuses = [
+                            { name: 'confirmed', label: 'Megerősít', color: 'bg-green-500 hover:bg-green-600' },
+                            { name: 'maybe', label: 'Talán', color: 'bg-yellow-500 hover:bg-yellow-600' },
+                            { name: 'declined', label: 'Elutasít', color: 'bg-red-500 hover:bg-red-600' }
+                        ];
+                        
+                        statuses.forEach(status => {
+                            const btn = document.createElement('button');
+                            btn.textContent = status.label;
+                            btn.className = `${status.color} text-white px-2 py-1 rounded text-sm`;
+                            btn.addEventListener('click', () => updateShiftStatus(uid, index, status.name));
+                            btnContainer.appendChild(btn);
+                        });
+                        
+                        li.appendChild(btnContainer);
+                        myShifts.appendChild(li);
+                    });
+                }
+                
+                myRank.textContent = data.rank || 'Nincs rang';
+            }
+        } catch (err) {
+            console.error('Load my data error:', err);
+            myShifts.innerHTML = '<li class="text-red-500">Hiba a betöltéskor</li>';
+        }
+    }
+    
+    // Update shift status (user)
+    async function updateShiftStatus(uid, index, status) {
+        try {
+            const userDoc = await getDocument(`${USERS_COLLECTION}/${uid}`);
+            const userData = convertFromFirestoreFormat(userDoc.fields);
+            userData.shifts[index].status = status;
+            
+            await setDocument(`${USERS_COLLECTION}/${uid}`, userData);
+            loadMyData(uid);
+        } catch (err) {
+            console.error('Update status error:', err);
+            alert('Hiba: ' + err.message);
+        }
+    }
+    
+    // Send message (user)
+    sendMessageBtn.addEventListener('click', async () => {
+        const text = messageText.value.trim();
+        
+        if (!text) {
+            alert('Írj üzenetet!');
+            return;
+        }
+        
+        try {
+            const docs = await listDocuments(USERS_COLLECTION);
+            const adminUids = [];
+            
+            docs.forEach(doc => {
+                const data = convertFromFirestoreFormat(doc.fields);
+                if (data.isAdmin) {
+                    adminUids.push(doc.name.split('/').pop());
+                }
+            });
+            
+            if (adminUids.length === 0) {
+                alert('Nincs admin a rendszerben!');
+                return;
+            }
+            
+            await setDocument(`messages/${Date.now()}`, {
+                from: currentUser.localId,
+                to: adminUids.join(','),
+                text
+            });
+            
+            alert('Üzenet elküldve!');
+            messageText.value = '';
+        } catch (err) {
+            console.error('Send message error:', err);
+            alert('Hiba: ' + err.message);
+        }
+    });
+    
+    // Enter key support
+    document.getElementById('email').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') loginBtn.click();
+    });
+    
+    document.getElementById('password').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') loginBtn.click();
+    });
 </script>
 
 </body>
