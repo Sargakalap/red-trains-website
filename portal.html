@@ -1,331 +1,657 @@
 <!DOCTYPE html>
 <html lang="hu" class="h-full">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RT Vasút Portál</title>
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-        // JAVÍTVA: query és where importálása
-        import { getFirestore, collection, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, onSnapshot, arrayUnion, Timestamp, query, where } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>RT Vasút Portál — Admin Felület</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        @keyframes subtle-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .subtle-spin { animation: subtle-spin 0.9s linear infinite; }
+        .modal-backdrop {
+            backdrop-filter: blur(4px);
+            background-color: rgba(2,6,23,0.45);
+        }
+        .btn-icon { display: inline-flex; align-items: center; gap: .5rem; justify-content:center; }
+        .soft-card { box-shadow: 0 6px 18px rgba(2,6,23,0.06); }
+    </style>
+</head>
+<body class="h-full bg-gradient-to-b from-gray-50 to-white font-inter text-gray-800">
+
+    <header class="bg-gradient-to-r from-blue-700 to-indigo-600 text-white">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="rounded-md bg-white/10 p-2">
+                        <svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2v6"></path>
+                            <path d="M4 10h16v6a2 2 0 0 1-2 2h-2l1 2H9l1-2H8a2 2 0 0 1-2-2v-6z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="text-xl font-extrabold leading-tight">RT Vasút Portál</div>
+                        <div class="text-xs opacity-80 -mt-1">Admin / Felhasználói kezelőfelület</div>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="flex items-center gap-4">
+                <a href="index.html" class="text-white/90 hover:text-white px-3 py-2 rounded-md">Főoldal</a>
+                <a href="portal.html" class="text-white/90 hover:text-white px-3 py-2 rounded-md">Portál</a>
+
+                <button id="nav-logout-btn" class="hidden btn-icon bg-red-500 hover:bg-red-600 px-3 py-2 rounded-md transition">
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 16l4-4m0 0l-4-4m4 4H7"></path>
+                        <path d="M7 8v8"></path>
+                    </svg>
+                    <span class="font-semibold">Kijelentkezés</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto p-6">
+        <h1 id="welcome-header" class="text-3xl font-bold mb-6 text-slate-800">Portál</h1>
+
+        <section id="auth-section" class="soft-card bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-8">
+            <div class="md:flex md:items-center md:justify-between">
+                <div>
+                    <h2 class="text-2xl font-semibold text-indigo-700">Bejelentkezés</h2>
+                    <p class="text-sm text-gray-500 mt-1">Jelentkezz be a felhasználói felülethez</p>
+                </div>
+            </div>
+
+            <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <input id="email" type="email" placeholder="Email" class="col-span-2 border p-3 rounded-lg focus:ring-2 focus:ring-indigo-300" />
+                <input id="password" type="password" placeholder="Jelszó" class="col-span-1 border p-3 rounded-lg focus:ring-2 focus:ring-indigo-300" />
+                <button id="login-btn" class="col-span-1 md:col-span-3 btn-icon bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-3 font-semibold transition">
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15 7a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h4z"></path>
+                        <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path>
+                    </svg>
+                    <span>Bejelentkezés</span>
+                </button>
+            </div>
+        </section>
+
+        <div id="admin-section" class="hidden space-y-6"></div>
+        <div id="user-section" class="hidden space-y-6"></div>
+    </main>
+
+    <div id="modal-container" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center px-4">
+        <div id="modal-box" class="bg-white rounded-xl soft-card w-full max-w-md p-5 transform transition-all duration-200 scale-95 opacity-0">
+            <h3 id="modal-title" class="text-lg font-bold text-slate-800"></h3>
+            <p id="modal-message" class="text-sm text-slate-600 mt-2"></p>
+            <div id="modal-actions" class="mt-4 flex justify-end gap-3"></div>
+        </div>
+    </div>
+
+    <template id="admin-template">
+        <div class="grid lg:grid-cols-2 gap-6">
+            <div class="space-y-6">
+                <div class="bg-white rounded-xl p-6 border border-gray-100 soft-card">
+                    <h3 class="text-xl font-semibold text-green-700 flex items-center gap-2">
+                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                            <path d="M18 9v3m0 0v3m0-3h3m-3 0h-3"></path>
+                            <path d="M12 12a4 4 0 1 0-8 0 4 4 0 0 0 8 0z"></path>
+                        </svg>
+                        Új Felhasználó Létrehozása
+                    </h3>
+
+                    <div class="mt-4 grid grid-cols-1 gap-3">
+                        <input id="new-user-email" placeholder="Email" class="border p-3 rounded-lg" />
+                        <input id="new-user-password" placeholder="Jelszó (min. 6 karakter)" class="border p-3 rounded-lg" />
+                        <button id="create-user-btn" class="btn-icon bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold">
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 4v16"></path><path d="M4 12h16"></path></svg>
+                            <span>Létrehozás</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 border border-gray-100 soft-card">
+                    <h3 class="text-xl font-semibold text-purple-700 flex items-center gap-2">
+                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 7V3m8 4V3m-9 8h10"></path></svg>
+                        Shift és Rang Hozzárendelés
+                    </h3>
+
+                    <div class="mt-4 grid grid-cols-1 gap-3">
+                        <select id="user-id" class="border p-3 rounded-lg bg-white"></select>
+                        <input id="route" placeholder="Menet/Shift (pl. Budapest-Debrecen)" class="border p-3 rounded-lg" />
+                        <input id="date" type="date" class="border p-3 rounded-lg" />
+                        <input id="rank" placeholder="Rang (pl. Mozdonyvezető)" class="border p-3 rounded-lg" />
+                        <div class="flex gap-3">
+                            <button id="assign-btn" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white rounded-lg px-4 py-2 font-semibold">Hozzárendelés</button>
+                            <button id="delete-btn" class="flex-1 bg-red-600 hover:bg-red-700 text-white rounded-lg px-4 py-2 font-semibold">Fiók törlése</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <div class="bg-white rounded-xl p-6 border border-gray-100 soft-card">
+                    <h3 class="text-xl font-semibold text-blue-700">Felhasználói lista</h3>
+                    <div id="user-list-spinner" class="text-center p-4 hidden">
+                        <svg class="h-8 w-8 subtle-spin mx-auto text-blue-500" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" class="opacity-20"></circle><path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="3" class="opacity-90"></path></svg>
+                    </div>
+                    <ul id="user-list" class="space-y-2 max-h-72 overflow-y-auto mt-3"></ul>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 border border-gray-100 soft-card">
+                    <h3 class="text-xl font-semibold text-blue-700">Adminoknak érkezett üzenetek</h3>
+                    <ul id="admin-messages" class="space-y-3 max-h-72 overflow-y-auto mt-3"></ul>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="user-template">
+        <div class="grid lg:grid-cols-2 gap-6">
+            <div class="bg-white rounded-xl p-6 border border-gray-100 soft-card">
+                <h3 class="text-xl font-semibold text-green-700 flex items-center gap-2">
+                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10"></path></svg>
+                    Beosztásaim
+                </h3>
+
+                <div id="user-shift-spinner" class="text-center p-4 hidden">
+                    <svg class="h-8 w-8 subtle-spin mx-auto text-blue-500" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" class="opacity-20"></circle><path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="3" class="opacity-90"></path></svg>
+                </div>
+
+                <ul id="my-shifts" class="space-y-3 mt-3"></ul>
+                <p class="mt-4 font-semibold text-lg text-gray-700">Rang: <span id="my-rank" class="text-blue-600 font-bold"></span></p>
+            </div>
+
+            <div class="bg-white rounded-xl p-6 border border-gray-100 soft-card">
+                <h3 class="text-xl font-semibold text-blue-700 flex items-center gap-2">
+                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14"></path></svg>
+                    Üzenet az Adminoknak
+                </h3>
+
+                <textarea id="message-text" placeholder="Írd ide az üzeneted..." class="border p-3 w-full h-36 rounded-lg mt-3"></textarea>
+                <button id="send-message-btn" class="mt-3 btn-icon bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M22 2L11 13"></path><path d="M22 2l-7 20 1-7 7-13z"></path></svg>
+                    <span>Üzenet küldése</span>
+                </button>
+
+            </div>
+        </div>
+    </template>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        // ===============================================
+        // 🚨 KONFIGURÁCIÓ 🚨 - CSERÉLD KI A TE ADATAIDRA!
+        // ===============================================
         
+        // ADMIN EMAIL: Ezzel az e-mail címmel azonosítja a rendszer az admint. 
+        // PONTOSAN IGYEN KELL SZEREPELNIE A FIREBASE AUTH ALATT IS!
+        const HARDCODED_ADMIN_EMAIL = "Sargakalapos@icloud.com"; 
+
+        // Firebase config (Cseréld ki a saját projekt beállításaira!)
         const firebaseConfig = {
-            apiKey: "AIzaSyCWD3P7MnyW6dXg-bRXt3-q_NKzZKfuWYA",
-            authDomain: "red-trains.firebaseapp.com",
-            projectId: "red-trains",
-            storageBucket: "red-trains.firebasestorage.app",
-            messagingSenderId: "1053066929936",
-            appId: "1:1053066929936:web:2034b7881af7c7febce795",
-            measurementId: "G-5420S3F705"
+            apiKey: "AIzaSyCWD3P7MnyW6dXg-bRXt3-q_NKzZKfuWYA", // PÉLDA
+            authDomain: "red-trains.firebaseapp.com", // PÉLDA
+            projectId: "red-trains", // PÉLDA
+            storageBucket: "red-trains.firebasestorage.app", // PÉLDA
+            messagingSenderId: "1053066929936", // PÉLDA
+            appId: "1:1053066929936:web:2034b7881af7c7febce795", // PÉLDA
+            measurementId: "G-5420S3F705" // PÉLDA
         };
+
+        // Inicializálás
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const USERS_COLLECTION = 'users'; 
+        const MESSAGES_COLLECTION = 'messages';
+
+        // ===============================================
+        // DOM REFERENCES & MODAL LOGIC
+        // ===============================================
         
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const USERS_COLLECTION = 'users collection';  // Konstans a collection névhez
-        
-        // DOM elemek
+        const welcomeHeader = document.getElementById('welcome-header');
         const authSection = document.getElementById('auth-section');
         const loginBtn = document.getElementById('login-btn');
-        const logoutBtn = document.getElementById('logout-btn');
+        const navLogoutBtn = document.getElementById('nav-logout-btn');
+
         const adminSection = document.getElementById('admin-section');
         const userSection = document.getElementById('user-section');
-        const userSelect = document.getElementById('user-id');
-        const routeInput = document.getElementById('route');
-        const dateInput = document.getElementById('date');
-        const rankInput = document.getElementById('rank');
-        const assignBtn = document.getElementById('assign-btn');
-        const deleteBtn = document.getElementById('delete-btn');
-        const userList = document.getElementById('user-list');
-        const myShifts = document.getElementById('my-shifts');
-        const myRank = document.getElementById('my-rank');
-        const newUserEmail = document.getElementById('new-user-email');
-        const newUserPassword = document.getElementById('new-user-password');
-        const createUserBtn = document.getElementById('create-user-btn');
-        const messageText = document.getElementById('message-text');
-        const sendMessageBtn = document.getElementById('send-message-btn');
-        
-        // --- JAVÍTOTT BLOKK KEZDETE ---
-        // Auth állapot figyelés - JAVÍTVA
-        onAuthStateChanged(auth, async (user) => {
+
+        const modalContainer = document.getElementById('modal-container');
+        const modalBox = document.getElementById('modal-box');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+        const modalActions = document.getElementById('modal-actions');
+
+        function showModal(title, message, type='alert', confirmCallback=null) {
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            modalActions.innerHTML = '';
+            modalContainer.classList.remove('hidden');
+            setTimeout(()=>{ modalBox.classList.remove('scale-95','opacity-0'); modalBox.classList.add('scale-100','opacity-100'); }, 10);
+
+            if (type === 'confirm' && confirmCallback) {
+                const confirmBtn = document.createElement('button');
+                confirmBtn.className = 'bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-md font-semibold';
+                confirmBtn.textContent = 'Megerősítés';
+                confirmBtn.onclick = ()=>{ hideModal(); confirmCallback(); };
+                const cancelBtn = document.createElement('button');
+                cancelBtn.className = 'bg-gray-300 hover:bg-gray-400 text-slate-800 px-3 py-2 rounded-md font-semibold';
+                cancelBtn.textContent = 'Mégse';
+                cancelBtn.onclick = hideModal;
+                modalActions.appendChild(cancelBtn);
+                modalActions.appendChild(confirmBtn);
+            } else {
+                const okBtn = document.createElement('button');
+                okBtn.className = 'bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-md font-semibold';
+                okBtn.textContent = 'OK';
+                okBtn.onclick = hideModal;
+                modalActions.appendChild(okBtn);
+            }
+        }
+
+        function hideModal() {
+            modalBox.classList.add('scale-95','opacity-0');
+            setTimeout(()=> modalContainer.classList.add('hidden'), 220);
+        }
+
+        function setButtonLoading(button, isLoading, text) {
+            if (!button) return;
+            if (isLoading) {
+                button.disabled = true;
+                button.classList.add('opacity-80','cursor-not-allowed');
+                button.innerHTML = `<svg class="h-5 w-5 subtle-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" class="opacity-20"></circle><path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="3" class="opacity-90"></path></svg><span>${text}</span>`;
+            } else {
+                button.disabled = false;
+                button.classList.remove('opacity-80','cursor-not-allowed');
+                if (button.dataset && button.dataset.defaultHtml) {
+                    button.innerHTML = button.dataset.defaultHtml;
+                } else {
+                    button.textContent = text;
+                }
+            }
+        }
+
+        document.querySelectorAll('button').forEach(b => {
+            b.dataset.defaultHtml = b.innerHTML;
+        });
+
+        // ===============================================
+        // AUTH & CORE LOGIC
+        // ===============================================
+
+        auth.onAuthStateChanged(async (user) => {
             if (user) {
                 authSection.classList.add('hidden');
-                logoutBtn.classList.remove('hidden');
-                
-                const userRef = doc(db, USERS_COLLECTION, user.uid);
-                const userDoc = await getDoc(userRef);
-                
-                let userData; // Ebben tároljuk a végleges felhasználói adatot
+                navLogoutBtn.classList.remove('hidden');
+                welcomeHeader.textContent = `Üdv, ${user.email || 'felhasználó'}!`;
 
-                if (!userDoc.exists()) {
-                    // Ha nincs doc, létrehozzuk az alapértelmezett adatokkal
-                    userData = {
-                        email: user.email || 'unknown',
-                        shifts: [],
-                        rank: '',
-                        isAdmin: false // Alapból nem admin
-                    };
-                    await setDoc(userRef, userData);
-                } else {
-                    // Ha van doc, beolvassuk az adatát
-                    userData = userDoc.data();
+                // ADMIN CHECK (EMAIL ALAPJÁN)
+                const isAdmin = (user.email === HARDCODED_ADMIN_EMAIL);
+                
+                // Felhasználó dokumentumának ellenőrzése/létrehozása (ha nem admin)
+                if (!isAdmin) {
+                      try {
+                          const userRef = db.collection(USERS_COLLECTION).doc(user.uid);
+                          const snap = await userRef.get();
+                          if (!snap.exists) {
+                            await userRef.set({ email: user.email || 'unknown', shifts: [], rank: '', isAdmin: false });
+                          }
+                      } catch (err) {
+                        console.error("Firestore user doc check error:", err);
+                      }
                 }
-
-                // Most már a 'userData' változó a mérvadó,
-                // ami vagy a meglévő, vagy az épp most létrehozott adat.
-                const isAdmin = userData.isAdmin === true; 
 
                 if (isAdmin) {
-                    adminSection.classList.remove('hidden');
+                    renderAdminSection();
                     loadUsers();
+                    loadAdminMessages();
                 } else {
-                    userSection.classList.remove('hidden');
+                    renderUserSection();
                     loadMyData(user.uid);
                 }
+
             } else {
+                welcomeHeader.textContent = 'Portál';
                 authSection.classList.remove('hidden');
+                navLogoutBtn.classList.add('hidden');
                 adminSection.classList.add('hidden');
                 userSection.classList.add('hidden');
-                logoutBtn.classList.add('hidden');
             }
         });
-        // --- JAVÍTOTT BLOKK VÉGE ---
-        
-        // Admin ellenőrzés Firestore-ból
-        async function checkIfAdmin(uid) {
-            const userDoc = await getDoc(doc(db, USERS_COLLECTION, uid));
-            return userDoc.exists() && userDoc.data().isAdmin === true;
-        }
-        
-        // Login
-        loginBtn.addEventListener('click', () => {
-            const email = document.getElementById('email').value;
+
+        // LOGIN
+        loginBtn.addEventListener('click', async () => {
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
-            signInWithEmailAndPassword(auth, email, password).catch(err => alert(err.message));
-        });
-        
-        // Logout
-        logoutBtn.addEventListener('click', () => {
-            signOut(auth)
-                .then(() => {
-                    alert('Sikeres kijelentkezés!');
-                })
-                .catch(err => alert('Hiba a kijelentkezéskor: ' + err.message));
-        });
-        
-        // Új user létrehozás (admin) - automatikus inicializáló shift hozzáadása
-        createUserBtn.addEventListener('click', async () => {
-            const email = newUserEmail.value;
-            const password = newUserPassword.value;
-            if (!email || !password) return alert('Adj meg emailt és jelszót!');
+            if (!email || !password) { showModal('Hiba!', 'Add meg az emailt és jelszót!'); return; }
+
+            setButtonLoading(loginBtn, true, 'Bejelentkezés');
             try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                const uid = userCredential.user.uid;
-                const initialShift = {
-                    route: "Budapest-Debrecen",
-                    date: "2025-12-01",
-                    status: "pending",
-                    createdAt: Timestamp.now()
-                };
-                await setDoc(doc(db, USERS_COLLECTION, uid), {
-                    email: email,
-                    shifts: [initialShift],
-                    rank: '',
-                    isAdmin: false
-                });
-                alert('User létrehozva inicializáló shift-tel!');
-                loadUsers();
+                await auth.signInWithEmailAndPassword(email, password);
+                document.getElementById('email').value = '';
+                document.getElementById('password').value = '';
             } catch (err) {
-                alert(err.message);
+                console.error(err);
+                showModal('Bejelentkezési hiba', err.message || 'Ismeretlen hiba');
+            } finally {
+                setButtonLoading(loginBtn, false, 'Bejelentkezés');
             }
         });
-        
-        // Shift és rang assign (admin)
-        assignBtn.addEventListener('click', async () => {
-            const uid = userSelect.value;
-            const route = routeInput.value;
-            const date = dateInput.value;
-            const rank = rankInput.value;
-            if (!uid) return alert('Válassz felhasználót!');
-            if (!route && !date && !rank) return alert('Adj meg valamit!');
+
+        // LOGOUT
+        navLogoutBtn.addEventListener('click', async () => {
+            setButtonLoading(navLogoutBtn, true, 'Kijelentkezés');
             try {
-                const userRef = doc(db, USERS_COLLECTION, uid);
-                const docSnap = await getDoc(userRef);
-                const updates = {};
-                if (route && date) {
-                    const newShift = { route, date, status: 'pending', createdAt: Timestamp.now() };
-                    if (!docSnap.exists()) {
-                        await setDoc(userRef, { shifts: [newShift], rank: rank || '', email: 'unknown' });
-                    } else {
-                        updates.shifts = arrayUnion(newShift);
-                    }
+                await auth.signOut();
+                showModal('Kijelentkezve', 'Viszlát! 👋');
+            } catch (err) {
+                showModal('Hiba', 'Kijelentkezési hiba: ' + err.message);
+            } finally {
+                setButtonLoading(navLogoutBtn, false, 'Kijelentkezés');
+            }
+        });
+
+        // ===============================================
+        // ADMIN LOGIC
+        // ===============================================
+
+        function renderAdminSection() {
+            // ... (Template rendering és DOM binding marad változatlan) ...
+            adminSection.innerHTML = '';
+            const tpl = document.getElementById('admin-template').content.cloneNode(true);
+            adminSection.appendChild(tpl);
+            adminSection.classList.remove('hidden');
+            userSection.classList.add('hidden');
+
+            window.createUserBtn = document.getElementById('create-user-btn');
+            window.newUserEmail = document.getElementById('new-user-email');
+            window.newUserPassword = document.getElementById('new-user-password');
+            window.userSelect = document.getElementById('user-id');
+            window.routeInput = document.getElementById('route');
+            window.dateInput = document.getElementById('date');
+            window.rankInput = document.getElementById('rank');
+            window.assignBtn = document.getElementById('assign-btn');
+            window.deleteBtn = document.getElementById('delete-btn');
+            window.userList = document.getElementById('user-list');
+            window.userListSpinner = document.getElementById('user-list-spinner');
+            window.adminMessagesList = document.getElementById('admin-messages');
+
+            createUserBtn.addEventListener('click', async () => {
+                const email = newUserEmail.value.trim();
+                const password = newUserPassword.value;
+
+                function isValidEmail(email) {
+                    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
                 }
-                if (rank) updates.rank = rank;
-                if (Object.keys(updates).length > 0) await updateDoc(userRef, updates);
-                alert('Hozzárendelve!');
-                loadUsers();
-            } catch (err) {
-                alert(err.message);
-            }
-        });
-        
-        // User törlés (admin) - csak Firestore, Auth-ot server-side töröld!
-        deleteBtn.addEventListener('click', async () => {
-            const uid = userSelect.value;
-            if (!uid) return alert('Válassz felhasználót!');
-            try {
-                await deleteDoc(doc(db, USERS_COLLECTION, uid));
-                alert('Felhasználó törölve (Firestore)!');
-                loadUsers();
-            } catch (err) {
-                alert(err.message);
-            }
-        });
-        
-        // User lista betöltés (admin)
-        async function loadUsers() {
-            userSelect.innerHTML = '';
-            userList.innerHTML = '';
-            const snapshot = await getDocs(collection(db, USERS_COLLECTION));
-            snapshot.forEach(docSnap => {
-                const data = docSnap.data();
-                const li = document.createElement('li');
-                li.textContent = `Email: ${data.email || 'N/A'} - Rang: ${data.rank || 'Nincs'} - Admin: ${data.isAdmin ? 'Igen' : 'Nem'}`;
-                userList.appendChild(li);
-        
-                const option = document.createElement('option');
-                option.value = docSnap.id;
-                option.textContent = data.email || docSnap.id;
-                userSelect.appendChild(option);
+
+                if (!email || !password || password.length < 6) { showModal('Hiba','Adj meg érvényes emailt és min. 6 karakteres jelszót.'); return; }
+                if (!isValidEmail(email)) { showModal('Hiba','Az e-mail cím formátuma érvénytelen.'); return; }
+
+                setButtonLoading(createUserBtn, true, 'Létrehozás');
+                try {
+                    // 1. Felhasználó létrehozása az Auth-ban
+                    const cred = await auth.createUserWithEmailAndPassword(email, password);
+                    const uid = cred.user.uid;
+                    
+                    // 2. Dokumentum létrehozása a Firestore-ban (Ezt engedélyezi a Security Rule az admin email alapján)
+                    await db.collection(USERS_COLLECTION).doc(uid).set({ email, shifts: [], rank:'', isAdmin: false });
+                    
+                    showModal('Siker', 'Felhasználó létrehozva ✅');
+                    newUserEmail.value=''; newUserPassword.value='';
+                    loadUsers();
+                } catch (err) {
+                    console.error("Felhasználó létrehozási hiba:", err);
+                    if (err.message.includes('permission') || err.message.includes('Permission')) {
+                         showModal('Kritikus Hiba!', 'A Firestore szabályok megtiltják a dokumentum létrehozását az Admin számára. ELLENŐRIZD A SECURITY RULES-T!');
+                    } else {
+                        showModal('Hiba', err.message || 'Felhasználó létrehozása sikertelen');
+                    }
+                } finally {
+                    setButtonLoading(createUserBtn, false, 'Létrehozás');
+                }
+            });
+
+            assignBtn.addEventListener('click', async () => {
+                const uid = userSelect.value;
+                const route = routeInput.value.trim();
+                const date = dateInput.value;
+                const rank = rankInput.value.trim();
+                if (!uid || (!route && !date && !rank)) { showModal('Hiba','Válassz felhasználót és adj meg legalább egy mezőt.'); return; }
+                setButtonLoading(assignBtn, true, 'Hozzárendelés');
+                try {
+                    const userRef = db.collection(USERS_COLLECTION).doc(uid);
+                    const updates = {};
+                    if (rank) updates.rank = rank;
+                    if (route && date) {
+                        const newShift = { route, date, status: 'pending', createdAt: firebase.firestore.Timestamp.now() };
+                        await userRef.update({ shifts: firebase.firestore.FieldValue.arrayUnion(newShift), ...(rank?{rank}: {}) });
+                    } else if (Object.keys(updates).length) {
+                        await userRef.update(updates);
+                    }
+                    showModal('Siker','Hozzárendelés megtörtént!');
+                    routeInput.value=''; dateInput.value=''; rankInput.value='';
+                    loadUsers();
+                } catch (err) {
+                    console.error(err);
+                    showModal('Hiba','Hiba a hozzárendeléskor: ' + err.message);
+                } finally {
+                    setButtonLoading(assignBtn, false, 'Hozzárendelés');
+                }
+            });
+
+            deleteBtn.addEventListener('click', () => {
+                const uid = userSelect.value;
+                if (!uid) { showModal('Hiba','Válassz felhasználót a törléshez!'); return; }
+                showModal('Megerősítés','Biztosan törlöd a felhasználó dokumentumát? (Auth-ot manuálisan kell törölni a console-ban)', 'confirm', async () => {
+                    setButtonLoading(deleteBtn, true, 'Törlés');
+                    try {
+                        await db.collection(USERS_COLLECTION).doc(uid).delete();
+                        showModal('Siker','Felhasználó dokumentum törölve.');
+                        loadUsers();
+                    } catch (err) {
+                        showModal('Hiba','Törlési hiba: ' + err.message);
+                    } finally {
+                        setButtonLoading(deleteBtn, false, 'Fiók törlése');
+                    }
+                });
             });
         }
         
-        // Saját adatok betöltés real-time (user)
-        function loadMyData(uid) {
-            const userRef = doc(db, USERS_COLLECTION, uid);
-            onSnapshot(userRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    myShifts.innerHTML = '';
-                    (data.shifts || []).forEach((shift, index) => {
+        // ... (A loadUsers, loadAdminMessages, renderUserSection, loadMyData és a segédfüggvények változatlanul következnek) ...
+
+        async function loadUsers() {
+            if (!window.userList) return;
+            userList.innerHTML = '';
+            userSelect.innerHTML = '<option value="">Válassz felhasználót...</option>';
+            userListSpinner.classList.remove('hidden');
+            try {
+                const snap = await db.collection(USERS_COLLECTION).get(); 
+                if (snap.empty) {
+                    userList.innerHTML = '<li class="text-gray-500 p-2">Nincs még felhasználó</li>';
+                } else {
+                    snap.forEach(doc => {
+                        const d = doc.data();
                         const li = document.createElement('li');
-                        li.innerHTML = `${shift.route} - ${shift.date} - Státusz: ${shift.status}`;
-                        const btns = ['confirmed', 'maybe', 'declined'].map(status => {
-                            const btn = document.createElement('button');
-                            btn.textContent = status.charAt(0).toUpperCase() + status.slice(1);
-                            btn.classList.add('bg-blue-500', 'text-white', 'p-1', 'ml-2', 'rounded');
-                            btn.addEventListener('click', () => updateShiftStatus(uid, index, status));
-                            return btn;
+                        li.className = 'p-3 bg-gray-50 rounded-lg flex justify-between items-center';
+                        li.innerHTML = `<div><p class="font-semibold">${d.email||'N/A'}</p><p class="text-sm text-gray-500">Rang: ${d.rank||'Nincs'} | Admin: ${d.isAdmin? 'Igen' : 'Nem'}</p></div>`;
+                        userList.appendChild(li);
+
+                        const opt = document.createElement('option');
+                        opt.value = doc.id;
+                        opt.textContent = d.email || doc.id;
+                        userSelect.appendChild(opt);
+                    });
+                }
+            } catch (err) {
+                console.error("User list hiba:", err);
+                userList.innerHTML = `<li class="text-red-500 p-3">Hiba a listázáskor: ${err.message}</li>`;
+            } finally {
+                userListSpinner.classList.add('hidden');
+            }
+        }
+
+        function loadAdminMessages() {
+            const list = document.getElementById('admin-messages');
+            db.collection(MESSAGES_COLLECTION).orderBy('createdAt','desc').onSnapshot(snapshot => {
+                if (!list) return;
+                list.innerHTML = '';
+                if (snapshot.empty) {
+                    list.innerHTML = '<li class="text-gray-500 p-3">Nincs beérkezett üzenet.</li>';
+                    return;
+                }
+                snapshot.forEach(doc => {
+                    const d = doc.data();
+                    const li = document.createElement('li');
+                    li.className = 'p-3 bg-white rounded-lg border';
+                    li.innerHTML = `<p class="text-sm text-gray-500">${d.fromEmail||'Ismeretlen'} — ${formatTimestamp(d.createdAt)}</p><p class="mt-1 text-gray-800">${d.text}</p>`;
+                    list.appendChild(li);
+                });
+            }, err => {
+                console.error("Admin üzenetek hiba:", err);
+                if (list) list.innerHTML = `<li class="text-red-500 p-3">Hiba: ${err.message}</li>`;
+            });
+        }
+
+        // ---------- USER RENDER/LOGIC ----------
+        function renderUserSection() {
+            userSection.innerHTML = '';
+            const tpl = document.getElementById('user-template').content.cloneNode(true);
+            userSection.appendChild(tpl);
+            userSection.classList.remove('hidden');
+            adminSection.classList.add('hidden');
+
+            window.userShiftSpinner = document.getElementById('user-shift-spinner');
+            window.myShifts = document.getElementById('my-shifts');
+            window.myRank = document.getElementById('my-rank');
+            window.messageText = document.getElementById('message-text');
+            window.sendMessageBtn = document.getElementById('send-message-btn');
+
+            sendMessageBtn.addEventListener('click', async () => {
+                const text = messageText.value.trim();
+                if (!text) { showModal('Hiba','Írj üzenetet!'); return; }
+                setButtonLoading(sendMessageBtn, true, 'Küldés');
+                try {
+                    await db.collection(MESSAGES_COLLECTION).add({
+                        fromUid: auth.currentUser.uid,
+                        fromEmail: auth.currentUser.email,
+                        text,
+                        createdAt: firebase.firestore.Timestamp.now()
+                    });
+                    showModal('Siker','Üzenet elküldve ✅');
+                    messageText.value = '';
+                } catch (err) {
+                    showModal('Hiba','Üzenetküldési hiba: ' + err.message);
+                } finally {
+                    setButtonLoading(sendMessageBtn, false, 'Üzenet küldése');
+                }
+            });
+        }
+
+        function loadMyData(uid) {
+            const ref = db.collection(USERS_COLLECTION).doc(uid);
+            userShiftSpinner.classList.remove('hidden');
+
+            ref.onSnapshot(doc => {
+                userShiftSpinner.classList.add('hidden');
+                if (!doc.exists) {
+                    myShifts.innerHTML = '<li class="text-red-500 p-3">Nincs adat.</li>';
+                    return;
+                }
+                const data = doc.data();
+                myShifts.innerHTML = '';
+                const shifts = data.shifts || [];
+                if (shifts.length === 0) {
+                    myShifts.innerHTML = '<li class="text-gray-500 p-3">Nincs még beosztásod</li>';
+                } else {
+                    shifts.forEach((shift, idx) => {
+                        const li = document.createElement('li');
+                        const status = (shift.status || 'pending');
+                        const colorClass = ({confirmed:'green',declined:'red',maybe:'yellow',pending:'gray'})[status] || 'gray';
+                        li.className = `p-3 bg-${colorClass}-50 border-l-4 border-${colorClass}-600 rounded-lg flex flex-col sm:flex-row justify-between gap-3`;
+                        li.style.borderLeft = `4px solid ${statusColorHex(status)}`;
+                        li.innerHTML = `
+                            <div>
+                                <div class="font-semibold">${escapeHtml(shift.route||'—')}</div>
+                                <div class="text-sm text-gray-600">${escapeHtml(shift.date||'—')} · Státusz: <span class="font-bold">${status.toUpperCase()}</span></div>
+                            </div>
+                        `;
+                        const btns = document.createElement('div');
+                        btns.className = 'flex gap-2';
+
+                        [
+                            {name:'confirmed', label:'Megerősít', cls:'bg-green-500 hover:bg-green-600'},
+                            {name:'maybe', label:'Talán', cls:'bg-yellow-500 hover:bg-yellow-600'},
+                            {name:'declined', label:'Elutasít', cls:'bg-red-500 hover:bg-red-600'}
+                        ].forEach(s => {
+                            const b = document.createElement('button');
+                            b.className = `${s.cls} text-white px-3 py-1 rounded-lg text-xs`;
+                            b.textContent = s.label;
+                            b.addEventListener('click', ()=> updateShiftStatus(uid, idx, s.name));
+                            btns.appendChild(b);
                         });
-                        btns.forEach(btn => li.appendChild(btn));
+
+                        li.appendChild(btns);
                         myShifts.appendChild(li);
                     });
-                    myRank.textContent = data.rank || 'Nincs rang';
-                } else {
-                    // Ha mégis nem létezik, mutass üzenetet
-                    myShifts.innerHTML = '<li>Nincs adat, próbáld frissíteni az oldalt.</li>';
                 }
+                myRank.textContent = data.rank || 'Nincs rang';
+            }, err => {
+                userShiftSpinner.classList.add('hidden');
+                myShifts.innerHTML = `<li class="text-red-500 p-3">Hiba: ${err.message}</li>`;
             });
         }
-        
-        // Shift státusz frissítés (user)
+
+        function statusColorHex(status) {
+            switch(status) {
+                case 'confirmed': return '#16A34A'; 
+                case 'maybe': return '#D97706'; 
+                case 'declined': return '#DC2626'; 
+                default: return '#64748B'; 
+            }
+        }
+
+        function formatTimestamp(ts) {
+            if (!ts) return '—';
+            try {
+                const d = ts.toDate ? ts.toDate() : new Date(ts);
+                return d.toLocaleDateString('hu-HU') + ' ' + d.toLocaleTimeString('hu-HU');
+            } catch(e) { return '—'; }
+        }
+
+        function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]); }
+
         async function updateShiftStatus(uid, index, status) {
-            const userRef = doc(db, USERS_COLLECTION, uid);
-            const docSnap = await getDoc(userRef);
-            if (docSnap.exists()) {
-                const shifts = docSnap.data().shifts;
+            try {
+                const ref = db.collection(USERS_COLLECTION).doc(uid);
+                const snap = await ref.get();
+                if (!snap.exists) return;
+                const shifts = snap.data().shifts || [];
+                if (!shifts[index]) return;
                 shifts[index].status = status;
-                await updateDoc(userRef, { shifts });
-                alert('Státusz frissítve!');
+                await ref.update({ shifts });
+            } catch (err) {
+                console.error(err);
+                showModal('Hiba','Státuszfrissítési hiba: ' + err.message);
             }
         }
         
-        // --- JAVÍTOTT BLOKK KEZDETE (Optimalizált) ---
-        // Üzenet küldés adminoknak (user)
-        sendMessageBtn.addEventListener('click', async () => {
-            const text = messageText.value;
-            if (!text) return alert('Írj üzenetet!');
-            try {
-                // 1. Létrehozunk egy query-t, ami csak az adminokat kéri le
-                const q = query(collection(db, USERS_COLLECTION), where("isAdmin", "==", true));
-                
-                // 2. Ezt a query-t futtatjuk le
-                const adminsSnapshot = await getDocs(q); 
-                
-                const adminUids = [];
-                // 3. Már csak az adminok vannak a snapshot-ban
-                adminsSnapshot.forEach(d => { adminUids.push(d.id); }); 
-                
-                await setDoc(doc(db, 'messages', Date.now().toString()), {
-                    from: auth.currentUser.uid,
-                    to: adminUids,
-                    text,
-                    createdAt: Timestamp.now()
-                });
-                alert('Üzenet elküldve!');
-                messageText.value = '';
-            } catch (err) {
-                alert(err.message);
-                // Valószínűleg indexelési hiba. A konzolon kiír egy linket, arra kattintva hozd létre az indexet.
-                if (err.code === 'failed-precondition') {
-                    alert('Hiba: Valószínűleg hiányzik egy Firestore index. Ellenőrizd a böngésző konzolját a hiba részleteiért és a létrehozási linkért!');
-                }
-            }
+        // Egyéb UX javítások
+        document.getElementById('email').addEventListener('keydown', e=>{ if(e.key==='Enter') loginBtn.click(); });
+        document.getElementById('password').addEventListener('keydown', e=>{ if(e.key==='Enter') loginBtn.click(); });
+        modalContainer.addEventListener('click', (ev) => {
+            if (ev.target === modalContainer) hideModal();
         });
-        // --- JAVÍTOTT BLOKK VÉGE ---
+
+        (function initUI(){
+            adminSection.classList.add('hidden');
+            userSection.classList.add('hidden');
+        })();
+
     </script>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="h-full bg-gray-100">
-
-<nav class="bg-blue-800 p-4 text-white flex justify-between">
-    <div class="text-xl font-bold">RT Vasút</div>
-    <ul class="flex space-x-4">
-        <li><a href="index.html" class="hover:underline">Főoldal</a></li>
-        <li><a href="portal.html" class="hover:underline">Portál</a></li>
-    </ul>
-</nav>
-
-<main class="p-8">
-    <h1 class="text-2xl font-bold mb-4">Admin Portál</h1>
-
-    <div id="auth-section" class="mb-6">
-        <h2 class="text-xl font-semibold mb-2">Bejelentkezés</h2>
-        <input type="email" id="email" placeholder="Email" class="border p-2 mb-2 w-full">
-        <input type="password" id="password" placeholder="Jelszó" class="border p-2 mb-2 w-full">
-        <button id="login-btn" class="bg-blue-600 text-white p-2 rounded">Bejelentkezés</button>
-        <button id="logout-btn" class="bg-red-600 text-white p-2 rounded hidden">Kijelentkezés</button>
-    </div>
-
-    <div id="admin-section" class="hidden">
-        <h2 class="text-xl font-semibold mb-2">Új Felhasználó Létrehozása</h2>
-        <input type="email" id="new-user-email" placeholder="Új Email" class="border p-2 mb-2 w-full">
-        <input type="password" id="new-user-password" placeholder="Új Jelszó" class="border p-2 mb-2 w-full">
-        <button id="create-user-btn" class="bg-green-600 text-white p-2 rounded mb-4">Létrehozás</button>
-
-        <h2 class="text-xl font-semibold mb-2">Shift és Rang Hozzárendelés</h2>
-        <select id="user-id" class="border p-2 mb-2 w-full"></select>
-        <input type="text" id="route" placeholder="Menet/Shift" class="border p-2 mb-2 w-full">
-        <input type="date" id="date" placeholder="Dátum" class="border p-2 mb-2 w-full">
-        <input type="text" id="rank" placeholder="Rang" class="border p-2 mb-2 w-full">
-        <button id="assign-btn" class="bg-purple-600 text-white p-2 rounded mb-2">Hozzárendelés</button>
-        <button id="delete-btn" class="bg-red-600 text-white p-2 rounded">Fiók törlése</button>
-
-        <h2 class="text-xl font-semibold mt-6 mb-2">Felhasználói lista</h2>
-        <ul id="user-list" class="border p-2 max-h-64 overflow-y-auto"></ul>
-    </div>
-
-    <div id="user-section" class="hidden">
-        <h2 class="text-xl font-semibold mb-2">Beosztásaim</h2>
-        <ul id="my-shifts" class="border p-2 max-h-64 overflow-y-auto"></ul>
-        <p class="mt-2 font-semibold">Rang: <span id="my-rank"></span></p>
-
-        <h2 class="text-xl font-semibold mt-6 mb-2">Üzenet az Adminoknak</h2>
-        <textarea id="message-text" placeholder="Üzenet..." class="border p-2 mb-2 w-full h-24"></textarea>
-        <button id="send-message-btn" class="bg-green-600 text-white p-2 rounded">Küldés</button>
-    </div>
-</main>
-
 </body>
 </html>
