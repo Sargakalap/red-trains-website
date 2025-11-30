@@ -193,13 +193,13 @@
 
         // Firebase config (Cseréld ki a saját projekt beállításaira!)
         const firebaseConfig = {
-            apiKey: "AIzaSyCWD3P7MnyW6dXg-bRXt3-q_NKzZKfuWYA", // PÉLDA
-            authDomain: "red-trains.firebaseapp.com", // PÉLDA
-            projectId: "red-trains", // PÉLDA
-            storageBucket: "red-trains.firebasestorage.app", // PÉLDA
-            messagingSenderId: "1053066929936", // PÉLDA
-            appId: "1:1053066929936:web:2034b7881af7c7febce795", // PÉLDA
-            measurementId: "G-5420S3F705" // PÉLDA
+            apiKey: "AIzaSyCWD3P7MnyW6dXg-bRXt3-q_NKzZKfuWYA",
+            authDomain: "red-trains.firebaseapp.com",
+            projectId: "red-trains",
+            storageBucket: "red-trains.firebasestorage.app",
+            messagingSenderId: "1053066929936",
+            appId: "1:1053066929936:web:2034b7881af7c7febce795",
+            measurementId: "G-5420S3F705"
         };
 
         // Inicializálás
@@ -290,8 +290,8 @@
                 navLogoutBtn.classList.remove('hidden');
                 welcomeHeader.textContent = `Üdv, ${user.email || 'felhasználó'}!`;
 
-                // ADMIN CHECK (EMAIL ALAPJÁN)
-                const isAdmin = (user.email === HARDCODED_ADMIN_EMAIL);
+                // ADMIN CHECK (EMAIL ALAPJÁN - case-insensitive összehasonlítás)
+                const isAdmin = (user.email && user.email.toLowerCase() === HARDCODED_ADMIN_EMAIL.toLowerCase());
                 
                 // Felhasználó dokumentumának ellenőrzése/létrehozása (ha nem admin)
                 if (!isAdmin) {
@@ -361,7 +361,6 @@
         // ===============================================
 
         function renderAdminSection() {
-            // ... (Template rendering és DOM binding marad változatlan) ...
             adminSection.innerHTML = '';
             const tpl = document.getElementById('admin-template').content.cloneNode(true);
             adminSection.appendChild(tpl);
@@ -393,23 +392,49 @@
                 if (!isValidEmail(email)) { showModal('Hiba','Az e-mail cím formátuma érvénytelen.'); return; }
 
                 setButtonLoading(createUserBtn, true, 'Létrehozás');
+                
+                // Mentse el a jelenlegi admin felhasználót
+                const currentAdminUser = auth.currentUser;
+                
                 try {
                     // 1. Felhasználó létrehozása az Auth-ban
                     const cred = await auth.createUserWithEmailAndPassword(email, password);
                     const uid = cred.user.uid;
                     
-                    // 2. Dokumentum létrehozása a Firestore-ban (Ezt engedélyezi a Security Rule az admin email alapján)
-                    await db.collection(USERS_COLLECTION).doc(uid).set({ email, shifts: [], rank:'', isAdmin: false });
+                    // 2. Dokumentum létrehozása a Firestore-ban MIELŐTT visszalépünk adminként
+                    await db.collection(USERS_COLLECTION).doc(uid).set({ 
+                        email, 
+                        shifts: [], 
+                        rank:'', 
+                        isAdmin: false,
+                        createdAt: firebase.firestore.Timestamp.now()
+                    });
                     
-                    showModal('Siker', 'Felhasználó létrehozva ✅');
-                    newUserEmail.value=''; newUserPassword.value='';
-                    loadUsers();
+                    // 3. AZONNAL jelentkeztesse ki az új felhasználót és jelentkeztesse be újra az admint
+                    await auth.signOut();
+                    
+                    // 4. Ha volt mentett admin felhasználó, jelentkeztesse be újra
+                    if (currentAdminUser && currentAdminUser.email) {
+                        // Ezt a részt nem tudjuk automatikusan megoldani jelszó nélkül
+                        // Ezért egyszerűen csak kijelentkeztetjük az új felhasználót
+                        showModal('Siker', 'Felhasználó létrehozva ✅. Jelentkezz be újra adminként!');
+                    } else {
+                        showModal('Siker', 'Felhasználó létrehozva ✅. Jelentkezz be újra adminként!');
+                    }
+                    
+                    newUserEmail.value=''; 
+                    newUserPassword.value='';
                 } catch (err) {
                     console.error("Felhasználó létrehozási hiba:", err);
-                    if (err.message.includes('permission') || err.message.includes('Permission')) {
-                         showModal('Kritikus Hiba!', 'A Firestore szabályok megtiltják a dokumentum létrehozását az Admin számára. ELLENŐRIZD A SECURITY RULES-T!');
+                    console.error("Error code:", err.code);
+                    console.error("Error message:", err.message);
+                    
+                    if (err.message.includes('permission') || err.message.includes('Permission') || err.code === 'permission-denied') {
+                         showModal('Kritikus Hiba!', 'Firestore engedély hiba: ' + err.message + '. Ellenőrizd a Security Rules-t és hogy admin vagy-e!');
+                    } else if (err.code === 'auth/email-already-in-use') {
+                        showModal('Hiba', 'Ez az email cím már használatban van.');
                     } else {
-                        showModal('Hiba', err.message || 'Felhasználó létrehozása sikertelen');
+                        showModal('Hiba', 'Hiba történt: ' + (err.message || 'Felhasználó létrehozása sikertelen'));
                     }
                 } finally {
                     setButtonLoading(createUserBtn, false, 'Létrehozás');
@@ -425,6 +450,15 @@
                 setButtonLoading(assignBtn, true, 'Hozzárendelés');
                 try {
                     const userRef = db.collection(USERS_COLLECTION).doc(uid);
+                    
+                    // Ellenőrizze hogy a dokumentum létezik-e
+                    const docSnap = await userRef.get();
+                    if (!docSnap.exists) {
+                        showModal('Hiba', 'A felhasználó dokumentum nem található!');
+                        setButtonLoading(assignBtn, false, 'Hozzárendelés');
+                        return;
+                    }
+                    
                     const updates = {};
                     if (rank) updates.rank = rank;
                     if (route && date) {
@@ -437,7 +471,9 @@
                     routeInput.value=''; dateInput.value=''; rankInput.value='';
                     loadUsers();
                 } catch (err) {
-                    console.error(err);
+                    console.error("Assignment error:", err);
+                    console.error("Error code:", err.code);
+                    console.error("Error message:", err.message);
                     showModal('Hiba','Hiba a hozzárendeléskor: ' + err.message);
                 } finally {
                     setButtonLoading(assignBtn, false, 'Hozzárendelés');
@@ -461,8 +497,6 @@
                 });
             });
         }
-        
-        // ... (A loadUsers, loadAdminMessages, renderUserSection, loadMyData és a segédfüggvények változatlanul következnek) ...
 
         async function loadUsers() {
             if (!window.userList) return;
@@ -508,7 +542,7 @@
                     const d = doc.data();
                     const li = document.createElement('li');
                     li.className = 'p-3 bg-white rounded-lg border';
-                    li.innerHTML = `<p class="text-sm text-gray-500">${d.fromEmail||'Ismeretlen'} — ${formatTimestamp(d.createdAt)}</p><p class="mt-1 text-gray-800">${d.text}</p>`;
+                    li.innerHTML = `<p class="text-sm text-gray-500">${d.fromEmail||'Ismeretlen'} — ${formatTimestamp(d.createdAt)}</p><p class="mt-1 text-gray-800">${escapeHtml(d.text)}</p>`;
                     list.appendChild(li);
                 });
             }, err => {
@@ -536,15 +570,25 @@
                 if (!text) { showModal('Hiba','Írj üzenetet!'); return; }
                 setButtonLoading(sendMessageBtn, true, 'Küldés');
                 try {
+                    const currentUser = auth.currentUser;
+                    if (!currentUser) {
+                        showModal('Hiba', 'Nem vagy bejelentkezve!');
+                        setButtonLoading(sendMessageBtn, false, 'Üzenet küldése');
+                        return;
+                    }
+                    
                     await db.collection(MESSAGES_COLLECTION).add({
-                        fromUid: auth.currentUser.uid,
-                        fromEmail: auth.currentUser.email,
+                        fromUid: currentUser.uid,
+                        fromEmail: currentUser.email,
                         text,
                         createdAt: firebase.firestore.Timestamp.now()
                     });
                     showModal('Siker','Üzenet elküldve ✅');
                     messageText.value = '';
                 } catch (err) {
+                    console.error("Message send error:", err);
+                    console.error("Error code:", err.code);
+                    console.error("Error message:", err.message);
                     showModal('Hiba','Üzenetküldési hiba: ' + err.message);
                 } finally {
                     setButtonLoading(sendMessageBtn, false, 'Üzenet küldése');
