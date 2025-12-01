@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RT Zrt. (Red Transport Zrt.) - Hivatalos Weboldal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Bebas+Neue&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-primary-blue: #1E40AF;
+            --color-accent-red: #DC2626;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F9FAFB;
+        }
+        .text-rt-red { color: var(--color-accent-red); }
+        .bg-rt-blue { background-color: var(--color-primary-blue); }
+        .hover\:bg-rt-red:hover { background-color: var(--color-accent-red); }
+        .border-rt-red { border-color: var(--color-accent-red); }
+        .card-hover-effect {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card-hover-effect:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .display-board {
+            font-family: 'Bebas Neue', sans-serif; 
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+        }
+        .board-cell {
+            font-family: 'Press Start 2P', cursive;
+            padding: 0.5rem 0.5rem; 
+            font-size: 0.75rem;
+            line-height: 1.2;
+            font-weight: 400;
+            letter-spacing: 0.05em;
+            color: #fff;
+        }
+        
+        @media (min-width: 640px) {
+            .board-cell {
+                font-size: 0.875rem;
+                padding: 0.5rem 1rem;
+            }
+        }
+
+        .status-cell-late {
+            background-color: var(--color-accent-red);
+            animation: pulse-red 1.5s infinite;
+        }
+        .status-cell-ok {
+            background-color: #10B981;
+        }
+        .status-cell-waiting {
+            background-color: #FBBF24;
+        }
+        @keyframes pulse-red {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .text-line-r { color: var(--color-accent-red); }
+        .text-line-g { color: #10B981; }
+        .text-line-b { color: #60A5FA; }
+    </style>
+</head>
+<body class="text-gray-800">
+    <header class="bg-rt-blue shadow-lg sticky top-0 z-10">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <span class="text-3xl font-bold text-white">RT </span>
+                        <span class="text-3xl font-bold text-rt-red">Zrt.</span>
+                    </div>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#home" class="text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition duration-150">Kezdőlap</a>
+                        <a href="#live-routes" class="text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition duration-150">Élő Menetrend</a>
+                        <a href="#routes" class="text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition duration-150">Útvonalak</a>
+                        <a href="#fleet" class="text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition duration-150">Járműpark</a>
+                        <a href="#contact" class="bg-rt-red text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-red-700 transition duration-150 shadow-md">Jegyek & Bérletek</a>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" type="button" class="bg-rt-red inline-flex items-center justify-center p-2 rounded-md text-white hover:text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" aria-controls="mobile-menu" aria-expanded="false">
+                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        <div class="md:hidden hidden" id="mobile-menu">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#home" class="text-white hover:bg-red-700 block px-3 py-2 rounded-md text-base font-medium transition duration-150">Kezdőlap</a>
+                <a href="#live-routes" class="text-white hover:bg-red-700 block px-3 py-2 rounded-md text-base font-medium transition duration-150">Élő Menetrend</a>
+                <a href="#routes" class="text-white hover:bg-red-700 block px-3 py-2 rounded-md text-base font-medium transition duration-150">Útvonalak</a>
+                <a href="#fleet" class="text-white hover:bg-red-700 block px-3 py-2 rounded-md text-base font-medium transition duration-150">Járműpark</a>
+                <a href="#contact" class="text-white hover:bg-red-700 block px-3 py-2 rounded-md text-base font-medium transition duration-150">Jegyek & Bérletek</a>
+            </div>
+        </div>
+    </header>
+    <main>
+        <section id="home" class="relative bg-rt-blue py-20 sm:py-32 overflow-hidden shadow-xl">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-white">
+                <div class="lg:w-2/3">
+                    <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight mb-4">
+                        RT Zrt. - <span class="text-rt-red">A Vörös Közlekedés.</span>
+                    </h1>
+                    <p class="text-xl sm:text-2xl font-light opacity-90 mb-8">
+                        Pontos, gyors és kényelmes utazás a kék-piros hálózaton. Csatlakozzon hozzánk, és utazzon a jövőbe!
+                    </p>
+                    <a href="#live-routes" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-xl text-rt-blue bg-white hover:bg-gray-100 transition duration-300 transform hover:scale-105" style="color: red;">
+                        Élő menetrendi kijelző (szimulátoros)
+                    </a>
+                </div>
+            </div>
+            <div class="absolute inset-0 opacity-10">
+                <img src="https://urbanmove8.neocities.org/redbus/rt/kepek/image%20(8).webp" alt="Hálózati háttér illusztráció" class="w-full h-full object-cover">
+            </div>
+        </section>
+        <section id="live-routes" class="py-16 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl sm:text-4xl font-bold text-center mb-6 text-rt-blue">Élő Menetrendi Kijelző</h2>
+            <p class="text-center text-gray-600 mb-8">A főállomás aktuális indulásai.</p>
+            <div class="bg-gray-900 rounded-xl shadow-2xl overflow-hidden border-4 border-rt-red display-board">
+                <div class="bg-rt-blue grid grid-cols-6 text-white text-base sm:text-lg font-bold uppercase tracking-wider">
+                    <div class="p-3 col-span-1">Indulás</div>
+                    <div class="p-3 col-span-1">Visz.</div>
+                    <div class="p-3 col-span-2">Célállomás</div>
+                    <div class="p-3 col-span-1 hidden sm:block">Vágány</div>
+                    <div class="p-3 col-span-1">Státusz</div>
+                </div>
+                
+                <div id="departure-board">
+                    </div>
+            </div>
+            <p class="text-center text-sm text-gray-500 mt-4">Utolsó frissítés: <span id="last-update">...</span></p>
+        </section>
+        <section id="routes" class="py-16 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl sm:text-4xl font-bold text-center mb-12 text-rt-blue">Részletes Útvonalak és Menetidők</h2>
+            <p class="text-center text-gray-600 mb-8">Az alábbi adatok a menetidőt mutatják (percben), az adott viszonylat kezdőállomásától (0 perc) számítva.</p>
+
+            <div class="bg-gray-100 p-4 rounded-lg shadow-inner mb-8 border-l-4 border-rt-red">
+                <h3 class="text-xl font-semibold mb-2 text-rt-blue">Jelzések Magyarázata:</h3>
+                <ul class="list-disc ml-5 text-sm space-y-1">
+                    <li><span class="font-bold">* :</span> Rövidített útvonal / Átmeneti végállomás</li>
+                    <li><span class="font-bold">= :</span> Kötelező megállás (Bár jelenleg nincs jelölve, a jelzés érvényes)</li>
+                    <li><span class="font-bold">+X-Y :</span> Menetidő (perc) intervallum az indulástól.</li>
+                </ul>
+            </div>
+            <div class="space-y-6">
+                <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+                    <button class="w-full text-left p-4 sm:p-6 bg-rt-blue text-white font-bold text-xl flex justify-between items-center transition duration-150 hover:bg-blue-900" onclick="toggleRoute('s1')">
+                        S1 Viszonylat (Rózsakert / Palotás)
+                        <svg id="arrow-s1" class="w-6 h-6 transform rotate-0 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div id="route-s1" class="hidden p-4 sm:p-6">
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div class="border border-rt-red rounded-lg p-4">
+                                <h4 class="text-lg font-semibold mb-3 text-rt-red">S1 &rarr; Rózsakert</h4>
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead>
+                                        <tr><th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Megálló</th><th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Menetidő (perc)</th></tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200 text-gray-800"> <tr><td class="px-4 py-2 whitespace-nowrap">Szántópuszta</td><td class="px-4 py-2 whitespace-nowrap">+1-2</td></tr>
+                                        <tr><td class="px-4 py-2 whitespace-nowrap">Láposmenyét</td><td class="px-4 py-2 whitespace-nowrap">+2-3</td></tr>
+                                        <tr><td class="px-4 py-2 whitespace-nowrap">Lápostelep</td><td class="px-4 py-2 whitespace-nowrap">+3-4</td></tr>
+                                        <tr><td class="px-4 py-2 whitespace-nowrap font-bold text-rt-red">Rózsakert</td><td class="px-4 py-2 whitespace-nowrap font-bold text-rt-red">+5-7</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="border border-rt-red rounded-lg p-4">
+                                <h4 class="text-lg font-semibold mb-3 text-rt-red">S1 &rarr; Palotás</h4>
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead>
+                                        <tr><th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Megálló</th><th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Menetidő (perc)</th></tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200 text-gray-800"> <tr><td class="px-4 py-2 whitespace-nowrap">Lápostelep</td><td class="px-4 py-2 whitespace-nowrap">+1-1</td></tr>
+                                        <tr><td class="px-4 py-2 whitespace-nowrap">Láposmenyét</td><td class="px-4 py-2 whitespace-nowrap">+2-3</td></tr>
+                                        <tr><td class="px-4 py-2 whitespace-nowrap">Szántópuszta</td><td class="px-4 py-2 whitespace-nowrap">+3</td></tr>
+                                        <tr><td class="px-4 py-2 whitespace-nowrap font-bold text-rt-red">Palotás</td><td class="px-4 py-2 whitespace-nowrap font-bold text-rt-red">+5</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+                    <button class="w-full text-left p-4 sm:p-6 bg-rt-blue text-white font-bold text-xl flex justify-between items-center transition duration-150 hover:bg-blue-900" onclick="toggleRoute('a')">
+                        A Viszonylat (Rózsakert / Palotás)
+                        <svg id="arrow-a" class="w-6 h-6 transform rotate-0 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div id="route-a" class="hidden p-4 sm:p-6">
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div class="border border-rt-red rounded-lg p-4">
+                                <h4 class="text-lg font-semibold mb-3 text-rt-red">A &rarr; Rózsakert</h4>
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead>
+                                        <tr><th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Megálló</th><th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Menetidő (perc)</th></tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200 text-gray-800"> <tr><td class="px-4 py-2 whitespace-nowrap">Palotás, Lakóegyenes</td><td class="px-4 py-2 whitespace-nowrap">+0-1</td></tr>
+                                        <tr><td class="px-4 py-2 whitespace-nowrap">Szántóföldek</td><td class="px-4 py-2 whitespace-nowrap">+1-1</td></tr>
+                                        <tr><td class="px-4 py-2 whitespace-nowrap">Szántópuszta, Lakótelkek</td><td class="px-4 py-2 whitespace-nowrap">+1-1</td></tr>
+                                        <tr><td class="px-4 py-2 whitespace-nowrap">Szántópuszta</td><td class="px-4 py-2 whitespace-nowrap">+1-3</td></tr>
+                                        <tr><td class="px-4 py-2 whitespace-nowrap">Láposmenyét</td><td class="px-4 py-2 whitespace-nowrap">+3-3</td></tr>
+                                        <tr><td class="px-4 py-2 whitespace-nowrap">Lápostelep</td><td class="px-4 py-2 whitespace-nowrap">+3-4</td></tr>
+                                        <tr><td class="px-4 py-2 whitespace-nowrap font-bold text-rt-red">Rózsakert</td><td class="px-4 py-2 whitespace-nowrap font-bold text-rt-red">+4-7</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="border border-rt-red rounded-lg p-4">
+                                <h4 class="text-lg font-semibold mb-3 text-rt-red">A &rarr; Palotás</h4>
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead>
+                                        <tr><th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Megálló</th><th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Menetidő (perc)</th></tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200 text-gray-800"> <tr><td class="px-4 py-2 whitespace-nowrap">Lápostelep</td><td class="px-4 py-2 whitespace-nowrap">+1-1</td></tr>
+                                        <tr><td class="px-4 py-2 whitespace-nowrap">Láposmenyét</td><td class="px-4 py-2 whitespace-nowrap">+2-3</td></tr>
+                                        <tr><td class="px-4 py-2 whitespace-nowrap">Szántópuszta</td><td class="px-4 py-2 whitespace-nowrap">+3-5</td></tr>
+                                        <tr><td class="px-4 py-2 whitespace-nowrap">Szántópuszta, Lakótelkek</td><td class="px-4 py-2 whitespace-nowrap">+5-5</td></tr>
+                                        <tr><td class="px-4 py-2 whitespace-nowrap">Szántóföldek</td><td class="px-4 py-2 whitespace-nowrap">+6-6</td></tr>
+                                        <tr><td class="px-4 py-2 whitespace-nowrap">Palotás, Lakóegyenes</td><td class="px-4 py-2 whitespace-nowrap">+7-7</td></tr>
+                                        <tr><td class="px-4 py-2 whitespace-nowrap font-bold text-rt-red">Palotás</td><td class="px-4 py-2 whitespace-nowrap font-bold text-rt-red">+7</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+                    <button class="w-full text-left p-4 sm:p-6 bg-rt-blue text-white font-bold text-xl flex justify-between items-center transition duration-150 hover:bg-blue-900" onclick="toggleRoute('na')">
+                        NA Viszonylat (Rózsakert)
+                        <svg id="arrow-na" class="w-6 h-6 transform rotate-0 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div id="route-na" class="hidden p-4 sm:p-6">
+                        <div class="border border-rt-red rounded-lg p-4">
+                            <h4 class="text-lg font-semibold mb-3 text-rt-red">NA &rarr; Rózsakert (Éjszakai járat)</h4>
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead>
+                                    <tr><th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Megálló</th><th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Menetidő (perc)</th></tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200 text-gray-800"> <tr><td class="px-4 py-2 whitespace-nowrap">Palotás, Lakóegyenes *</td><td class="px-4 py-2 whitespace-nowrap">+0-0</td></tr>
+                                    <tr><td class="px-4 py-2 whitespace-nowrap">Szántóföldek</td><td class="px-4 py-2 whitespace-nowrap">+0-1</td></tr>
+                                    <tr><td class="px-4 py-2 whitespace-nowrap">Szántópuszta, Lakótelkek</td><td class="px-4 py-2 whitespace-nowrap">+1-1</td></tr>
+                                    <tr><td class="px-4 py-2 whitespace-nowrap">Szántópuszta</td><td class="px-4 py-2 whitespace-nowrap">+1-3</td></tr>
+                                    <tr><td class="px-4 py-2 whitespace-nowrap">Láposmenyét *</td><td class="px-4 py-2 whitespace-nowrap">+4-4</td></tr>
+                                    <tr><td class="px-4 py-2 whitespace-nowrap">Lápostelep</td><td class="px-4 py-2 whitespace-nowrap">+5-5</td></tr>
+                                    <tr><td class="px-4 py-2 whitespace-nowrap font-bold text-rt-red">Rózsakert</td><td class="px-4 py-2 whitespace-nowrap font-bold text-rt-red">+6</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section id="fleet" class="py-16 sm:py-24 bg-gray-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="text-3xl sm:text-4xl font-bold text-center mb-12 text-rt-blue">A RT Zrt. Járműparkja</h2>
+                <p class="text-center text-gray-600 mb-12">Futurisztikus járműveinket úgy terveztük, hogy a legnagyobb sebességet és kényelmet biztosítsák a városi és a körjáratos hálózatban egyaránt.</p>
+                <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 rounded-lg mb-12 shadow-md" role="alert">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 pt-0.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bell-ring"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><path d="M18.8 14.2c.4-.6 1.4-.4 1.8-.4s.8.4.8.8"/></svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="font-bold text-sm">Frissítés a Járműparkról (Discord / 2025.11.24)</p>
+                            <p class="text-sm"><strong>2025.11.23. üzemzárással állományból törölve RT EDMUX 1000 004.</strong> A vonat a leselejtezés utáni életre készül fel. Kérjük, vegye figyelembe, hogy ez a típus már nem vesz részt a menetrendi forgalomban.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-12 rounded-xl shadow-2xl overflow-hidden border-4 border-gray-300">
+                    <img src="https://urbanmove8.neocities.org/redbus/rt/kepek/image%20(6).webp" alt="Kép a RT Zrt. járműparkjáról" class="w-full h-auto object-cover">
+                    <p class="text-center text-sm text-gray-500 pt-3 pb-3 bg-white">A RT Zrt. jelenlegi járműparkja (fentről lefelé)</p>
+                </div>
+                <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 rounded-lg mb-12 shadow-md" role="alert">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 pt-0.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bell-ring"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><path d="M18.8 14.2c.4-.6 1.4-.4 1.8-.4s.8.4.8.8"/></svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="font-bold text-sm">Új Flotta Tag Érkezett (RT Discord / 2025.11.26)</p>
+                            <p class="text-sm"><strong>30-as vasútvonal spotter — 20:24: Új M40 Flotta tag.</strong> Kérjük, vegye figyelembe, hogy a menetrendi hálózatot az új jármű hozzájárulása alapján frissítjük.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-800 p-4 rounded-lg mb-12 shadow-md" role="alert">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 pt-0.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-info">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="font-bold text-sm">MoLaRi + Régi DINAMO Rendszerfrissítés (RT Discord / 2025.11.26 – redecske_spotter)</p>
+                            <p class="text-sm">
+                                A <strong>MoLaRi rendszer</strong> teljesen elkészült, és néhány régi <strong>DINAMO egység</strong> is frissítve lett.
+                                A mai shiften mindegyik rendszer próbaüzemben fut.  
+                                A MoLaRi panelekre kötött, míg a régi DINAMO-k helyszíni kezelésűek.
+                                Következő készülő egység: <strong>DS977</strong>, immár teljes távoli vezérléssel.  
+                                A rendszereket több helyen is meg lehet találni — szinte mindenhol jelen vannak.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section id="contact" class="bg-rt-red py-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
+                <h2 class="text-3xl sm:text-4xl font-bold mb-4" style="color: red;">Kérdése van? Lépjen velünk kapcsolatba!</h2>
+                <p class="text-xl font-light mb-8" style="color: navy;">Ügyfélszolgálatunk készen áll, hogy segítsen a menetrenddel, jegyekkel vagy utazási információkkal kapcsolatban.</p>
+                <a href="#" class="inline-flex items-center px-8 py-4 border-2 border-white text-base font-medium rounded-lg shadow-xl text-rt-red bg-white hover:bg-gray-100 transition duration-300 transform hover:scale-105">
+                    Írjon nekünk
+                </a>
+            </div>
+        </section>
+    </main>
+    <footer class="bg-rt-blue text-white">
+        <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
+                <div>
+                    <span class="text-2xl font-bold text-white">RT </span>
+                    <span class="text-2xl font-bold text-rt-red">Zrt.</span>
+                    <p class="text-sm mt-2 text-gray-300">A Red Transport Zrt. elkötelezett a kiváló közlekedési szolgáltatás iránt.</p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-3 text-rt-red">Gyorslinkek</h4>
+                    <ul class="space-y-2 text-sm text-gray-300">
+                        <li><a href="#home" class="hover:text-white transition duration-150">Kezdőlap</a></li>
+                        <li><a href="#live-routes" class="hover:text-white transition duration-150">Élő Menetrend</a></li>
+                        <li><a href="#routes" class="hover:text-white transition duration-150">Részletes Útvonalak</a></li>
+                        <li><a href="#fleet" class="hover:text-white transition duration-150">Járműpark</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-3 text-rt-red">Elérhetőségek</h4>
+                    <ul class="space-y-2 text-sm text-gray-300">
+                        <li></li>
+                        <li>E-mail: (még nincs emailünk)</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="mt-8 pt-8 border-t border-gray-700 text-center text-sm text-gray-400">
+                &copy; 2025 RT Zrt. Minden jog fenntartva.
+            </div>
+        </div>
+    </footer>
+    <script>
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const menu = document.getElementById('mobile-menu');
+            const isExpanded = this.getAttribute('aria-expanded') === 'true' || false;
+            this.setAttribute('aria-expanded', !isExpanded);
+            menu.classList.toggle('hidden');
+        });
+        
+        function toggleRoute(routeId) {
+            const routeContent = document.getElementById('route-' + routeId);
+            const arrow = document.getElementById('arrow-' + routeId);
+        
+            if (routeContent.classList.contains('hidden')) {
+                routeContent.classList.remove('hidden');
+                routeContent.classList.add('animate-fadeIn');
+                arrow.classList.add('rotate-180');
+            } else {
+                routeContent.classList.add('hidden');
+                arrow.classList.remove('rotate-180');
+            }
+        }
+        
+        const departures = [
+            { line: 'S1', destination: 'Rózsakert', platform: 1, delay: 0, interval: 10 },
+            { line: 'A', destination: 'Palotás', platform: 2, delay: 5, interval: 15 },
+            { line: 'S1', destination: 'Palotás', platform: 1, delay: 0, interval: 20 },
+            { line: 'NA', destination: 'Rózsakert', platform: 3, delay: 0, interval: 30 },
+        ];
+        
+        /**
+         * Kiszámítja a következő indulási időt és a státuszt.
+         * @param {number} interval - Az indulási gyakoriság percekben.
+         * @param {number} delay - A jelenlegi késés percekben.
+         * @returns {{ time: string, status: string, statusClass: string }} A kiszámított idő és státusz.
+         */
+        function calculateDepartureStatus(interval, delay) {
+            const now = new Date();
+            const currentMinutes = now.getHours() * 60 + now.getMinutes();
+            const elapsed = currentMinutes % interval;
+            let nextDepartureTime = currentMinutes + (interval - elapsed);
+            let finalDepartureMinutes = nextDepartureTime + delay;
+            while (finalDepartureMinutes <= currentMinutes) {
+                nextDepartureTime += interval;
+                finalDepartureMinutes = nextDepartureTime + delay;
+            }
+        
+            const finalDepHour = Math.floor(finalDepartureMinutes / 60) % 24;
+            const finalDepMinute = finalDepartureMinutes % 60;
+            
+            let status = 'VÁRÁS';
+            let statusClass = 'status-cell-waiting';
+            let finalTime = `${String(finalDepHour).padStart(2, '0')}:${String(finalDepMinute).padStart(2, '0')}`;
+            
+            const minutesUntilDeparture = finalDepartureMinutes - currentMinutes;
+        
+            if (delay > 0) {
+                status = `KÉSIK +${delay}P`;
+                statusClass = 'status-cell-late';
+            }
+            
+            if (minutesUntilDeparture <= 5 && minutesUntilDeparture >= 0) {
+                status = delay > 0 ? `KÉSÉS (${delay}P)` : 'INDULÁS';
+                statusClass = delay > 0 ? 'status-cell-late' : 'status-cell-ok';
+            } else if (minutesUntilDeparture < 0) {
+                status = 'VÁRÁS';
+                statusClass = 'status-cell-waiting';
+            }
+        
+        
+            return {
+                time: finalTime,
+                status: status,
+                statusClass: statusClass
+            };
+        }
+        
+        function updateDepartureBoard() {
+            const boardContainer = document.getElementById('departure-board');
+            let html = '';
+        
+            const randomDelay = Math.floor(Math.random() * 8);
+            
+            departures.forEach((dep, index) => {
+                let currentDelay = dep.delay;
+                if (dep.line === 'NA') {
+                    currentDelay = randomDelay;
+                }
+        
+                const { time, status, statusClass } = calculateDepartureStatus(dep.interval, currentDelay);
+        
+                let lineClass = 'text-line-b';
+        
+                const rowClass = index % 2 === 0 ? 'bg-gray-800' : 'bg-gray-700';
+        
+                html += `
+                    <div class="grid grid-cols-6 text-white text-sm font-medium border-t border-gray-700 ${rowClass}">
+                        <div class="board-cell col-span-1">${time}</div>
+                        <div class="board-cell col-span-1 font-extrabold ${lineClass}">${dep.line}</div>
+                        <div class="board-cell col-span-2">${dep.destination.toUpperCase()}</div>
+                        <div class="board-cell col-span-1 hidden sm:block">${dep.platform}</div>
+                        <div class="board-cell col-span-1 text-xs sm:text-sm font-bold ${statusClass}">
+                            ${status}
+                        </div>
+                    </div>
+                `;
+            });
+        
+            boardContainer.innerHTML = html;
+            document.getElementById('last-update').textContent = new Date().toLocaleTimeString('hu-HU');
+        }
+        
+        window.onload = function () {
+            updateDepartureBoard();
+            setInterval(updateDepartureBoard, 60000);
+        
+            document.getElementById('mobile-menu-button').addEventListener('click', function() {
+                const menu = document.getElementById('mobile-menu');
+                const isExpanded = this.getAttribute('aria-expanded') === 'true' || false;
+                this.setAttribute('aria-expanded', !isExpanded);
+                menu.classList.toggle('hidden');
+            });
+        };
+    </script>
+</body>
+</html>
