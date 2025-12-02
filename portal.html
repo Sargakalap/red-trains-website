@@ -187,6 +187,17 @@
                         Üzenet küldése felhasználónak
                     </h3>
                     <div class="mt-4 grid grid-cols-1 gap-3">
+                        <!-- Article creator (Admin only) -->
+                        <div class="space-y-2">
+                            <label class="text-sm font-semibold">Cikk címe</label>
+                            <input id="article-title" class="border p-3 rounded-lg w-full" placeholder="Cikk címe" />
+                            <label class="text-sm font-semibold">Cikk tartalma</label>
+                            <textarea id="article-content" class="border p-3 w-full h-36 rounded-lg" placeholder="Írd ide a cikket..."></textarea>
+                            <div class="flex justify-end">
+                                <button id="publish-article-btn" class="btn-icon bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-semibold">Közzététel</button>
+                            </div>
+                        </div>
+
                         <select id="send-to-user" class="border p-3 rounded-lg bg-white"></select>
                         <textarea id="admin-message-text" placeholder="Írd ide az üzeneted..." class="border p-3 w-full h-24 rounded-lg"></textarea>
                         <button id="send-to-user-btn" class="btn-icon bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-semibold">
@@ -457,6 +468,10 @@
             window.userList = document.getElementById('user-list');
             window.userListSpinner = document.getElementById('user-list-spinner');
             window.adminMessagesList = document.getElementById('admin-messages');
+            // Article editor elements (admin only)
+            window.articleTitle = document.getElementById('article-title');
+            window.articleContent = document.getElementById('article-content');
+            window.publishArticleBtn = document.getElementById('publish-article-btn');
 
             createUserBtn.addEventListener('click', async () => {
                 const email = newUserEmail.value.trim();
@@ -627,6 +642,38 @@
                     setButtonLoading(sendToUserBtn, false, 'Üzenet küldése');
                 }
             });
+
+            // Publish article (admin only)
+            if (publishArticleBtn) {
+                publishArticleBtn.addEventListener('click', async () => {
+                    const title = (articleTitle && articleTitle.value || '').trim();
+                    const content = (articleContent && articleContent.value || '').trim();
+                    if (!title || !content) { showModal('Hiba','Adj meg címet és tartalmat a cikkhez!'); return; }
+                    setButtonLoading(publishArticleBtn, true, 'Mentés');
+                    try {
+                        const currentAdmin = auth.currentUser;
+                        if (!currentAdmin) { showModal('Hiba','Nem vagy bejelentkezve!'); return; }
+
+                        // Save to 'articles' collection
+                        await db.collection('articles').add({
+                            title,
+                            content,
+                            authorEmail: currentAdmin.email,
+                            authorUid: currentAdmin.uid,
+                            createdAt: firebase.firestore.Timestamp.now()
+                        });
+
+                        showModal('Siker','Cikk mentve a Firestore-ba ✅');
+                        if (articleTitle) articleTitle.value = '';
+                        if (articleContent) articleContent.value = '';
+                    } catch (err) {
+                        console.error('Article save error:', err);
+                        showModal('Hiba','Cikk mentési hiba: ' + err.message);
+                    } finally {
+                        setButtonLoading(publishArticleBtn, false, 'Közzététel');
+                    }
+                });
+            }
         }
 
         async function loadUsers() {
