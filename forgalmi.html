@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RT - Forgalmi hírek</title>
+    <link rel="shortcut icon" href="Adobe Express - file.png" type="image/png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Bebas+Neue&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-primary-blue: #1E40AF;
+            --color-accent-red: #DC2626;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F9FAFB;
+        }
+        .text-rt-red { color: var(--color-accent-red); }
+        .bg-rt-blue { background-color: var(--color-primary-blue); }
+        .hover\:bg-rt-red:hover { background-color: var(--color-accent-red); }
+        .border-rt-red { border-color: var(--color-accent-red); }
+        .card-hover-effect {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card-hover-effect:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .display-board {
+            font-family: 'Bebas Neue', sans-serif; 
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+        }
+        .board-cell {
+            font-family: 'Press Start 2P', cursive;
+            padding: 0.5rem 0.5rem; 
+            font-size: 0.75rem;
+            line-height: 1.2;
+            font-weight: 400;
+            letter-spacing: 0.05em;
+            color: #fff;
+        }
+        
+        @media (min-width: 640px) {
+            .board-cell {
+                font-size: 0.875rem;
+                padding: 0.5rem 1rem;
+            }
+        }
+
+        .status-cell-late {
+            background-color: var(--color-accent-red);
+            animation: pulse-red 1.5s infinite;
+        }
+        .status-cell-ok {
+            background-color: #10B981;
+        }
+        .status-cell-waiting {
+            background-color: #FBBF24;
+        }
+        @keyframes pulse-red {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .text-line-r { color: var(--color-accent-red); }
+        .text-line-g { color: #10B981; }
+        .text-line-b { color: #60A5FA; }
+    </style>
+</head>
+<body class="text-gray-800">
+    <header class="bg-rt-blue shadow-lg sticky top-0 z-10">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <span class="text-3xl font-bold text-white">RT </span>
+                        <span class="text-3xl font-bold text-rt-red">Zrt.</span>
+                    </div>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="index.html" class="text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition duration-150">Kezdőlap</a>
+                        <a href="forgalmi.html" class="text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition duration-150">Forgalmi hírek</a>
+                        <a href="portal.html" class="text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition duration-150">Bejelentkezés a portálba</a>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" type="button" class="bg-rt-red inline-flex items-center justify-center p-2 rounded-md text-white hover:text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" aria-controls="mobile-menu" aria-expanded="false">
+                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        <div class="md:hidden hidden" id="mobile-menu">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#home" class="text-white hover:bg-red-700 block px-3 py-2 rounded-md text-base font-medium transition duration-150">Kezdőlap</a>
+                <a href="#live-routes" class="text-white hover:bg-red-700 block px-3 py-2 rounded-md text-base font-medium transition duration-150">Élő Menetrend</a>
+                <a href="#routes" class="text-white hover:bg-red-700 block px-3 py-2 rounded-md text-base font-medium transition duration-150">Útvonalak</a>
+                <a href="#fleet" class="text-white hover:bg-red-700 block px-3 py-2 rounded-md text-base font-medium transition duration-150">Járműpark</a>
+                <a href="portal.html" class="text-white hover:bg-red-700 block px-3 py-2 rounded-md text-base font-medium transition duration-150">Bejelentkezés a portálba </a>
+                <a href="" class="text-white hover:bg-red-700 block px-3 py-2 rounded-md text-base font-medium transition duration-150">Jegyek & Bérletek</a>
+            </div>
+        </div>
+    </header>
+    <main>
+        <section id="home" class="relative bg-rt-blue py-20 sm:py-32 overflow-hidden shadow-xl">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-white">
+                <div class="lg:w-2/3">
+                    <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight mb-4">
+                        Hírek és forgalmi változások - <span class="text-rt-red">Legyen naprakész!</span>
+                    </h1>
+                    <p class="text-xl sm:text-2xl font-light opacity-90 mb-8">
+                       Itt olvashatja a legfrissebb forgalmi híreket, útlezárásokat és szolgáltatási változásokat a RT Zrt. hálózatán. Tájékozódjon időben, hogy utazása zökkenőmentes legyen!
+                    </p>
+                    <a href="#news" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-xl text-rt-blue bg-white hover:bg-gray-100 transition duration-300 transform hover:scale-105" style="color: red;">
+                        Hírek
+                    </a>
+                </div>
+            </div>
+            <div class="absolute inset-0 opacity-10">
+                <img src="https://urbanmove8.neocities.org/redbus/rt/kepek/image%20(8).webp" alt="Hálózati háttér illusztráció" class="w-full h-full object-cover">
+            </div>
+        </section>
+        <section id="news" class="py-16 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl sm:text-4xl font-bold text-center mb-12">Legfrissebb Forgalmi Hírek</h2>
+        </section>

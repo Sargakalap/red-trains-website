@@ -89,6 +89,30 @@
         </div>
     </div>
 
+    <div id="reply-modal-container" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center px-4">
+        <div id="reply-modal-box" class="bg-white rounded-xl soft-card w-full max-w-2xl p-6 transform transition-all duration-200 scale-95 opacity-0 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-slate-800">Üzenet Megválaszolása</h3>
+                <button id="reply-modal-close" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+            <div id="reply-original-message" class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-4">
+                <p class="text-sm text-gray-600"><strong>Küldő:</strong> <span id="reply-from-email"></span></p>
+                <p class="text-sm text-gray-600"><strong>Dátum:</strong> <span id="reply-date"></span></p>
+                <p class="text-sm text-gray-800 mt-2 p-3 bg-white rounded border-l-4 border-blue-500"><span id="reply-message-text"></span></p>
+            </div>
+            <textarea id="reply-text" placeholder="Írd ide a válaszodat..." class="border p-3 w-full h-32 rounded-lg mb-4 focus:ring-2 focus:ring-blue-300"></textarea>
+            <div class="flex justify-end gap-3">
+                <button id="reply-cancel-btn" class="bg-gray-300 hover:bg-gray-400 text-slate-800 px-4 py-2 rounded-lg font-semibold">Mégsem</button>
+                <button id="reply-send-btn" class="btn-icon bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
+                    </svg>
+                    <span>Válasz küldése</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <template id="admin-template">
         <div class="grid lg:grid-cols-2 gap-6">
             <div class="space-y-6">
@@ -154,6 +178,25 @@
                     <h3 class="text-xl font-semibold text-blue-700">Adminoknak érkezett üzenetek</h3>
                     <ul id="admin-messages" class="space-y-3 max-h-72 overflow-y-auto mt-3"></ul>
                 </div>
+
+                <div class="bg-white rounded-xl p-6 border border-gray-100 soft-card">
+                    <h3 class="text-xl font-semibold text-indigo-700 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
+</svg>
+                        Üzenet küldése felhasználónak
+                    </h3>
+                    <div class="mt-4 grid grid-cols-1 gap-3">
+                        <select id="send-to-user" class="border p-3 rounded-lg bg-white"></select>
+                        <textarea id="admin-message-text" placeholder="Írd ide az üzeneted..." class="border p-3 w-full h-24 rounded-lg"></textarea>
+                        <button id="send-to-user-btn" class="btn-icon bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-semibold">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
+</svg>
+                            <span>Üzenet küldése</span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </template>
@@ -196,6 +239,19 @@
                 </button>
 
             </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 border border-gray-100 soft-card">
+            <h3 class="text-xl font-semibold text-purple-700 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M9 3.75H6.912a2.25 2.25 0 0 0-2.15 1.588L2.35 13.177a2.25 2.25 0 0 0-.1.661V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 0 0-2.15-1.588H15M2.25 13.5h3.86a2.25 2.25 0 0 1 2.012 1.244l.256.512a2.25 2.25 0 0 0 2.013 1.244h3.218a2.25 2.25 0 0 0 2.013-1.244l.256-.512a2.25 2.25 0 0 1 2.013-1.244h3.859M12 3v8.25m0 0-3-3m3 3 3-3" />
+</svg>
+                Üzenetek az Adminoktól
+            </h3>
+            <div id="user-inbox-spinner" class="text-center p-4 hidden">
+                <svg class="h-8 w-8 subtle-spin mx-auto text-blue-500" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" class="opacity-20"></circle><path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="3" class="opacity-90"></path></svg>
+            </div>
+            <ul id="user-inbox" class="space-y-3 max-h-96 overflow-y-auto mt-3"></ul>
         </div>
     </template>
 
@@ -334,6 +390,7 @@
                 } else {
                     renderUserSection();
                     loadMyData(user.uid);
+                    loadUserInbox(user.uid);
                 }
 
             } else {
@@ -518,12 +575,65 @@
                     }
                 });
             });
+
+            // Send message to user
+            window.sendToUserSelect = document.getElementById('send-to-user');
+            window.adminMessageText = document.getElementById('admin-message-text');
+            window.sendToUserBtn = document.getElementById('send-to-user-btn');
+
+            sendToUserBtn.addEventListener('click', async () => {
+                const userId = sendToUserSelect.value;
+                const messageText = adminMessageText.value.trim();
+
+                if (!userId) { showModal('Hiba', 'Válassz felhasználót!'); return; }
+                if (!messageText) { showModal('Hiba', 'Írj üzenetet!'); return; }
+
+                setButtonLoading(sendToUserBtn, true, 'Küldés');
+                try {
+                    const currentAdmin = auth.currentUser;
+                    if (!currentAdmin) {
+                        showModal('Hiba', 'Nem vagy bejelentkezve!');
+                        return;
+                    }
+
+                    // Store message in the user's document
+                    const userRef = db.collection(USERS_COLLECTION).doc(userId);
+                    const userSnap = await userRef.get();
+                    
+                    if (!userSnap.exists) {
+                        showModal('Hiba', 'A felhasználó nem található!');
+                        return;
+                    }
+                    
+                    const userData = userSnap.data();
+                    const messages = userData.messages || [];
+                    
+                    messages.push({
+                        fromUid: currentAdmin.uid,
+                        fromEmail: currentAdmin.email,
+                        text: messageText,
+                        replies: [],
+                        createdAt: firebase.firestore.Timestamp.now()
+                    });
+                    
+                    await userRef.update({ messages });
+
+                    showModal('Siker', 'Üzenet elküldve ✅');
+                    adminMessageText.value = '';
+                } catch (err) {
+                    console.error("Message send error:", err);
+                    showModal('Hiba', 'Üzenetküldési hiba: ' + err.message);
+                } finally {
+                    setButtonLoading(sendToUserBtn, false, 'Üzenet küldése');
+                }
+            });
         }
 
         async function loadUsers() {
             if (!window.userList) return;
             userList.innerHTML = '';
             userSelect.innerHTML = '<option value="">Válassz felhasználót...</option>';
+            sendToUserSelect.innerHTML = '<option value="">Válassz felhasználót...</option>';
             userListSpinner.classList.remove('hidden');
             try {
                 const snap = await db.collection(USERS_COLLECTION).get(); 
@@ -532,15 +642,68 @@
                 } else {
                     snap.forEach(doc => {
                         const d = doc.data();
-                        const li = document.createElement('li');
-                        li.className = 'p-3 bg-gray-50 rounded-lg flex justify-between items-center';
-                        li.innerHTML = `<div><p class="font-semibold">${d.email||'N/A'}</p><p class="text-sm text-gray-500">Rang: ${d.rank||'Nincs'} | Admin: ${d.isAdmin? 'Igen' : 'Nem'}</p></div>`;
-                        userList.appendChild(li);
+                        // Add user to dropdown
+                        const option = document.createElement('option');
+                        option.value = doc.id;
+                        option.textContent = d.email || 'Ismeretlen felhasználó';
+                        userSelect.appendChild(option);
 
-                        const opt = document.createElement('option');
-                        opt.value = doc.id;
-                        opt.textContent = d.email || doc.id;
-                        userSelect.appendChild(opt);
+                        // Add user to send-to dropdown
+                        const option2 = document.createElement('option');
+                        option2.value = doc.id;
+                        option2.textContent = d.email || 'Ismeretlen felhasználó';
+                        sendToUserSelect.appendChild(option2);
+                        
+                        const li = document.createElement('li');
+                        li.className = 'p-3 bg-gray-50 rounded-lg';
+                        
+                        // User basic info
+                        const userInfo = document.createElement('div');
+                        userInfo.className = 'mb-2';
+                        userInfo.innerHTML = `<p class="font-semibold">${d.email||'N/A'}</p><p class="text-sm text-gray-500">Rang: ${d.rank||'Nincs'} | Admin: ${d.isAdmin? 'Igen' : 'Nem'}</p>`;
+                        li.appendChild(userInfo);
+                        
+                        // Show shifts with status
+                        const shifts = d.shifts || [];
+                        if (shifts.length > 0) {
+                            const shiftsContainer = document.createElement('div');
+                            shiftsContainer.className = 'mt-2 space-y-1 border-t pt-2';
+                            
+                            shifts.forEach((shift, idx) => {
+                                const shiftDiv = document.createElement('div');
+                                shiftDiv.className = 'text-xs p-2 rounded flex justify-between items-center';
+                                
+                                const status = shift.status || 'pending';
+                                const statusColors = {
+                                    'confirmed': 'bg-green-100 text-green-800',
+                                    'declined': 'bg-red-100 text-red-800',
+                                    'maybe': 'bg-yellow-100 text-yellow-800',
+                                    'pending': 'bg-gray-100 text-gray-800'
+                                };
+                                const statusLabels = {
+                                    'confirmed': '✓ Megerősítve',
+                                    'declined': '✗ Elutasítva',
+                                    'maybe': '? Talán',
+                                    'pending': '⏳ Függőben'
+                                };
+                                
+                                shiftDiv.className = `text-xs p-2 rounded flex justify-between items-center ${statusColors[status] || statusColors['pending']}`;
+                                shiftDiv.innerHTML = `
+                                    <span><strong>${escapeHtml(shift.route||'—')}</strong> · ${escapeHtml(shift.date||'—')}</span>
+                                    <span class="font-semibold ml-2">${statusLabels[status] || status.toUpperCase()}</span>
+                                `;
+                                shiftsContainer.appendChild(shiftDiv);
+                            });
+                            
+                            li.appendChild(shiftsContainer);
+                        } else {
+                            const noShifts = document.createElement('div');
+                            noShifts.className = 'text-xs text-gray-400 mt-2 italic border-t pt-2';
+                            noShifts.textContent = 'Nincs beosztás';
+                            li.appendChild(noShifts);
+                        }
+                        
+                        userList.appendChild(li);
                     });
                 }
             } catch (err) {
@@ -586,6 +749,8 @@
             window.myRank = document.getElementById('my-rank');
             window.messageText = document.getElementById('message-text');
             window.sendMessageBtn = document.getElementById('send-message-btn');
+            window.userInbox = document.getElementById('user-inbox');
+            window.userInboxSpinner = document.getElementById('user-inbox-spinner');
 
             sendMessageBtn.addEventListener('click', async () => {
                 const text = messageText.value.trim();
@@ -615,6 +780,23 @@
                 } finally {
                     setButtonLoading(sendMessageBtn, false, 'Üzenet küldése');
                 }
+            });
+
+            // Setup reply modal
+            const replyModalContainer = document.getElementById('reply-modal-container');
+            const replyModalBox = document.getElementById('reply-modal-box');
+            const replyModalClose = document.getElementById('reply-modal-close');
+            const replyCancelBtn = document.getElementById('reply-cancel-btn');
+            
+            function closeReplyModal() {
+                replyModalBox.classList.add('scale-95','opacity-0');
+                setTimeout(()=> replyModalContainer.classList.add('hidden'), 220);
+            }
+            
+            replyModalClose.addEventListener('click', closeReplyModal);
+            replyCancelBtn.addEventListener('click', closeReplyModal);
+            replyModalContainer.addEventListener('click', (ev) => {
+                if (ev.target === replyModalContainer) closeReplyModal();
             });
         }
 
@@ -705,7 +887,185 @@
                 showModal('Hiba','Státuszfrissítési hiba: ' + err.message);
             }
         }
+
+        function loadUserInbox(uid) {
+            const list = document.getElementById('user-inbox');
+            const spinner = document.getElementById('user-inbox-spinner');
+            if (!list) return;
+            
+            spinner.classList.remove('hidden');
+            
+            // Load messages directed to this user from the users document
+            const userRef = db.collection(USERS_COLLECTION).doc(uid);
+            
+            userRef.onSnapshot(doc => {
+                spinner.classList.add('hidden');
+                list.innerHTML = '';
+                
+                if (!doc.exists) {
+                    list.innerHTML = '<li class="text-gray-500 p-3">Nincs adat.</li>';
+                    return;
+                }
+                
+                const userData = doc.data();
+                const userMessages = userData.messages || [];
+                
+                if (userMessages.length === 0) {
+                    list.innerHTML = '<li class="text-gray-500 p-3">Nincs üzenet az Adminoktól.</li>';
+                    return;
+                }
+                
+                // Sort messages by createdAt descending
+                userMessages.sort((a, b) => {
+                    const timeA = a.createdAt ? (a.createdAt.toDate ? a.createdAt.toDate() : a.createdAt) : 0;
+                    const timeB = b.createdAt ? (b.createdAt.toDate ? b.createdAt.toDate() : b.createdAt) : 0;
+                    return timeB - timeA;
+                });
+                
+                userMessages.forEach((message, idx) => {
+                    const li = document.createElement('li');
+                    li.className = 'p-4 bg-blue-50 rounded-lg border border-blue-200 space-y-2';
+                    
+                    const header = document.createElement('div');
+                    header.className = 'flex justify-between items-start';
+                    header.innerHTML = `
+                        <div>
+                            <p class="font-semibold text-blue-900">${message.fromEmail||'Admin'}</p>
+                            <p class="text-xs text-blue-600">${formatTimestamp(message.createdAt)}</p>
+                        </div>
+                    `;
+                    li.appendChild(header);
+                    
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'p-3 bg-white rounded border-l-4 border-blue-500 text-gray-800';
+                    messageDiv.textContent = message.text || '(üres üzenet)';
+                    li.appendChild(messageDiv);
+                    
+                    // Show replies if exist
+                    if (message.replies && message.replies.length > 0) {
+                        const repliesDiv = document.createElement('div');
+                        repliesDiv.className = 'space-y-2 mt-3 pl-4 border-l-2 border-green-300';
+                        
+                        message.replies.forEach(reply => {
+                            const replyDiv = document.createElement('div');
+                            replyDiv.className = 'p-3 bg-green-50 rounded text-sm text-gray-700';
+                            replyDiv.innerHTML = `
+                                <p class="text-xs text-green-600 font-semibold">${formatTimestamp(reply.createdAt)}</p>
+                                <p class="mt-1">${escapeHtml(reply.text)}</p>
+                            `;
+                            repliesDiv.appendChild(replyDiv);
+                        });
+                        
+                        li.appendChild(repliesDiv);
+                    }
+                    
+                    // Reply button
+                    const replyBtn = document.createElement('button');
+                    replyBtn.className = 'mt-3 text-sm bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded font-semibold';
+                    replyBtn.textContent = 'Válaszolás';
+                    replyBtn.addEventListener('click', () => openReplyModal(uid, idx, message));
+                    li.appendChild(replyBtn);
+                    
+                    list.appendChild(li);
+                });
+            }, err => {
+                spinner.classList.add('hidden');
+                console.error("User inbox hiba:", err);
+                console.error("Error code:", err.code);
+                console.error("Error message:", err.message);
+                if (list) {
+                    if (err.code === 'permission-denied') {
+                        list.innerHTML = `<li class="text-red-500 p-3">Engedély hiba. Ellenőrizd a Firestore Security Rules-t.</li>`;
+                    } else {
+                        list.innerHTML = `<li class="text-red-500 p-3">Hiba az üzenetek betöltésekor: ${err.message}</li>`;
+                    }
+                }
+            });
+        }
+
+        function openReplyModal(userId, messageIndex, messageData) {
+            const replyModalContainer = document.getElementById('reply-modal-container');
+            const replyModalBox = document.getElementById('reply-modal-box');
+            const replyFromEmail = document.getElementById('reply-from-email');
+            const replyDate = document.getElementById('reply-date');
+            const replyMessageText = document.getElementById('reply-message-text');
+            const replyText = document.getElementById('reply-text');
+            const replySendBtn = document.getElementById('reply-send-btn');
+            
+            replyFromEmail.textContent = messageData.fromEmail || 'Admin';
+            replyDate.textContent = formatTimestamp(messageData.createdAt);
+            replyMessageText.textContent = messageData.text || '(üres üzenet)';
+            replyText.value = '';
+            
+            replyModalContainer.classList.remove('hidden');
+            setTimeout(() => {
+                replyModalBox.classList.remove('scale-95','opacity-0');
+                replyModalBox.classList.add('scale-100','opacity-100');
+            }, 10);
+            
+            // Remove old event listener and add new one
+            const newReplySendBtn = replySendBtn.cloneNode(true);
+            replySendBtn.parentNode.replaceChild(newReplySendBtn, replySendBtn);
+            
+            newReplySendBtn.addEventListener('click', async () => {
+                const replyContent = replyText.value.trim();
+                if (!replyContent) { showModal('Hiba', 'Írj egy választ!'); return; }
+                
+                setButtonLoading(newReplySendBtn, true, 'Küldés');
+                try {
+                    const currentUser = auth.currentUser;
+                    if (!currentUser) {
+                        showModal('Hiba', 'Nem vagy bejelentkezve!');
+                        return;
+                    }
+                    
+                    // Add reply to the message stored in the user's document
+                    const userRef = db.collection(USERS_COLLECTION).doc(userId);
+                    const userSnap = await userRef.get();
+                    
+                    if (!userSnap.exists) {
+                        showModal('Hiba', 'A felhasználó dokumentum nem található!');
+                        return;
+                    }
+                    
+                    const userData = userSnap.data();
+                    const messages = userData.messages || [];
+                    
+                    if (!messages[messageIndex]) {
+                        showModal('Hiba', 'Az üzenet nem található!');
+                        return;
+                    }
+                    
+                    if (!messages[messageIndex].replies) {
+                        messages[messageIndex].replies = [];
+                    }
+                    
+                    messages[messageIndex].replies.push({
+                        fromUid: currentUser.uid,
+                        fromEmail: currentUser.email,
+                        text: replyContent,
+                        createdAt: firebase.firestore.Timestamp.now()
+                    });
+                    
+                    await userRef.update({ messages });
+                    
+                    showModal('Siker', 'Válasz elküldve ✅');
+                    
+                    const replyModalContainer = document.getElementById('reply-modal-container');
+                    const replyModalBox = document.getElementById('reply-modal-box');
+                    replyModalBox.classList.add('scale-95','opacity-0');
+                    setTimeout(() => replyModalContainer.classList.add('hidden'), 220);
+                    
+                } catch (err) {
+                    console.error("Reply send error:", err);
+                    showModal('Hiba', 'Válaszküldési hiba: ' + err.message);
+                } finally {
+                    setButtonLoading(newReplySendBtn, false, 'Válasz küldése');
+                }
+            });
+        }
         
+
         // Egyéb UX javítások
         document.getElementById('email').addEventListener('keydown', e=>{ if(e.key==='Enter') loginBtn.click(); });
         document.getElementById('password').addEventListener('keydown', e=>{ if(e.key==='Enter') loginBtn.click(); });
