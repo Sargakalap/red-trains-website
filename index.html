@@ -125,23 +125,6 @@
                 <img src="https://urbanmove8.neocities.org/redbus/rt/kepek/image%20(8).webp" alt="Hálózati háttér illusztráció" class="w-full h-full object-cover">
             </div>
         </section>
-        <section id="live-routes" class="py-16 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 class="text-3xl sm:text-4xl font-bold text-center mb-6 text-rt-blue">Élő Menetrendi Kijelző</h2>
-            <p class="text-center text-gray-600 mb-8">A főállomás aktuális indulásai.</p>
-            <div class="bg-gray-900 rounded-xl shadow-2xl overflow-hidden border-4 border-rt-red display-board">
-                <div class="bg-rt-blue grid grid-cols-6 text-white text-base sm:text-lg font-bold uppercase tracking-wider">
-                    <div class="p-3 col-span-1">Indulás</div>
-                    <div class="p-3 col-span-1">Visz.</div>
-                    <div class="p-3 col-span-2">Célállomás</div>
-                    <div class="p-3 col-span-1 hidden sm:block">Vágány</div>
-                    <div class="p-3 col-span-1">Státusz</div>
-                </div>
-                
-                <div id="departure-board">
-                    </div>
-            </div>
-            <p class="text-center text-sm text-gray-500 mt-4">Utolsó frissítés: <span id="last-update">...</span></p>
-        </section>
         <section id="routes" class="py-16 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 class="text-3xl sm:text-4xl font-bold text-center mb-12 text-rt-blue">Részletes Útvonalak és Menetidők</h2>
             <p class="text-center text-gray-600 mb-8">Az alábbi adatok a menetidőt mutatják (percben), az adott viszonylat kezdőállomásától (0 perc) számítva.</p>
@@ -262,7 +245,18 @@
         <section id="fleet" class="py-16 sm:py-24 bg-gray-50">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <h2 class="text-3xl sm:text-4xl font-bold text-center mb-12 text-rt-blue">A RT Zrt. Járműparkja</h2>
-                <p class="text-center text-gray-600 mb-12">Futurisztikus járműveinket úgy terveztük, hogy a legnagyobb sebességet és kényelmet biztosítsák a városi és a körjáratos hálózatban egyaránt.</p>
+                <p class="text-center text-gray-600 mb-12">Ismerje meg az RT járműveit!</p>
+                <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 rounded-lg mb-12 shadow-md" role="alert">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 pt-0.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bell-ring"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><path d="M18.8 14.2c.4-.6 1.4-.4 1.8-.4s.8.4.8.8"/></svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="font-bold text-sm">Fontos információ!</p>
+                            <p class="text-sm"><strong>A hírek elköltöztek!</strong> Tekintse meg <a href="forgalmi.html">itt</a></p>
+                        </div>
+                    </div>
+                </div>
                 <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 rounded-lg mb-12 shadow-md" role="alert">
                     <div class="flex items-start">
                         <div class="flex-shrink-0 pt-0.5">
@@ -382,99 +376,6 @@
             { line: 'NA', destination: 'Rózsakert', platform: 3, delay: 0, interval: 30 },
         ];
         
-        /**
-         * Kiszámítja a következő indulási időt és a státuszt.
-         * @param {number} interval - Az indulási gyakoriság percekben.
-         * @param {number} delay - A jelenlegi késés percekben.
-         * @returns {{ time: string, status: string, statusClass: string }} A kiszámított idő és státusz.
-         */
-        function calculateDepartureStatus(interval, delay) {
-            const now = new Date();
-            const currentMinutes = now.getHours() * 60 + now.getMinutes();
-            const elapsed = currentMinutes % interval;
-            let nextDepartureTime = currentMinutes + (interval - elapsed);
-            let finalDepartureMinutes = nextDepartureTime + delay;
-            while (finalDepartureMinutes <= currentMinutes) {
-                nextDepartureTime += interval;
-                finalDepartureMinutes = nextDepartureTime + delay;
-            }
-        
-            const finalDepHour = Math.floor(finalDepartureMinutes / 60) % 24;
-            const finalDepMinute = finalDepartureMinutes % 60;
-            
-            let status = 'VÁRÁS';
-            let statusClass = 'status-cell-waiting';
-            let finalTime = `${String(finalDepHour).padStart(2, '0')}:${String(finalDepMinute).padStart(2, '0')}`;
-            
-            const minutesUntilDeparture = finalDepartureMinutes - currentMinutes;
-        
-            if (delay > 0) {
-                status = `KÉSIK +${delay}P`;
-                statusClass = 'status-cell-late';
-            }
-            
-            if (minutesUntilDeparture <= 5 && minutesUntilDeparture >= 0) {
-                status = delay > 0 ? `KÉSÉS (${delay}P)` : 'INDULÁS';
-                statusClass = delay > 0 ? 'status-cell-late' : 'status-cell-ok';
-            } else if (minutesUntilDeparture < 0) {
-                status = 'VÁRÁS';
-                statusClass = 'status-cell-waiting';
-            }
-        
-        
-            return {
-                time: finalTime,
-                status: status,
-                statusClass: statusClass
-            };
-        }
-        
-        function updateDepartureBoard() {
-            const boardContainer = document.getElementById('departure-board');
-            let html = '';
-        
-            const randomDelay = Math.floor(Math.random() * 8);
-            
-            departures.forEach((dep, index) => {
-                let currentDelay = dep.delay;
-                if (dep.line === 'NA') {
-                    currentDelay = randomDelay;
-                }
-        
-                const { time, status, statusClass } = calculateDepartureStatus(dep.interval, currentDelay);
-        
-                let lineClass = 'text-line-b';
-        
-                const rowClass = index % 2 === 0 ? 'bg-gray-800' : 'bg-gray-700';
-        
-                html += `
-                    <div class="grid grid-cols-6 text-white text-sm font-medium border-t border-gray-700 ${rowClass}">
-                        <div class="board-cell col-span-1">${time}</div>
-                        <div class="board-cell col-span-1 font-extrabold ${lineClass}">${dep.line}</div>
-                        <div class="board-cell col-span-2">${dep.destination.toUpperCase()}</div>
-                        <div class="board-cell col-span-1 hidden sm:block">${dep.platform}</div>
-                        <div class="board-cell col-span-1 text-xs sm:text-sm font-bold ${statusClass}">
-                            ${status}
-                        </div>
-                    </div>
-                `;
-            });
-        
-            boardContainer.innerHTML = html;
-            document.getElementById('last-update').textContent = new Date().toLocaleTimeString('hu-HU');
-        }
-        
-        window.onload = function () {
-            updateDepartureBoard();
-            setInterval(updateDepartureBoard, 60000);
-        
-            document.getElementById('mobile-menu-button').addEventListener('click', function() {
-                const menu = document.getElementById('mobile-menu');
-                const isExpanded = this.getAttribute('aria-expanded') === 'true' || false;
-                this.setAttribute('aria-expanded', !isExpanded);
-                menu.classList.toggle('hidden');
-            });
-        };
-    </script>
+        </script>
 </body>
 </html>

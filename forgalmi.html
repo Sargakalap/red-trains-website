@@ -125,4 +125,225 @@
         </section>
         <section id="news" class="py-16 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 class="text-3xl sm:text-4xl font-bold text-center mb-12">Legfrissebb Forgalmi Hírek</h2>
+            
+            <!-- Admin Article Publish (csak ha bejelentkezve és admin) -->
+            <div id="admin-article-publish" class="hidden mb-12 bg-gradient-to-r from-emerald-50 to-green-50 p-6 rounded-xl border-2 border-emerald-300 shadow-lg">
+                <h3 class="text-xl font-bold text-emerald-800 mb-4">📰 Új Hír Posztolása (Admin)</h3>
+                <div class="space-y-4">
+                    <input id="fm-article-title" type="text" placeholder="Hír címe" class="w-full border-2 border-emerald-300 p-3 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+                    <textarea id="fm-article-content" placeholder="Hír tartalma..." rows="6" class="w-full border-2 border-emerald-300 p-3 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none"></textarea>
+                    <div class="flex justify-end gap-3">
+                        <button id="fm-publish-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-bold transition">Posztolás</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Articles List -->
+            <div id="articles-list" class="space-y-6">
+                <!-- Cikkek dinamikusan kerülnek ide -->
+            </div>
         </section>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCWD3P7MnyW6dXg-bRXt3-q_NKzZKfuWYA",
+            authDomain: "red-trains.firebaseapp.com",
+            projectId: "red-trains",
+            storageBucket: "red-trains.firebasestorage.app",
+            messagingSenderId: "1053066929936",
+            appId: "1:1053066929936:web:2034b7881af7c7febce795",
+            measurementId: "G-5420S3F705"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const HARDCODED_ADMIN_EMAIL = "sargakalapos@icloud.com";
+        
+        // Discord Webhook URL - cseréld ki a te webhook URL-edre
+        const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/YOUR_WEBHOOK_ID/YOUR_WEBHOOK_TOKEN";
+
+        // DOM Elements
+        const adminPublishDiv = document.getElementById('admin-article-publish');
+        const articlesList = document.getElementById('articles-list');
+        const fmArticleTitle = document.getElementById('fm-article-title');
+        const fmArticleContent = document.getElementById('fm-article-content');
+        const fmPublishBtn = document.getElementById('fm-publish-btn');
+
+        // Auth state listener
+        auth.onAuthStateChanged(user => {
+            if (user && user.email && user.email.toLowerCase() === HARDCODED_ADMIN_EMAIL.toLowerCase()) {
+                // Show admin publish section
+                adminPublishDiv.classList.remove('hidden');
+            } else {
+                // Hide admin publish section
+                adminPublishDiv.classList.add('hidden');
+            }
+        });
+
+        // Publish article button handler
+        if (fmPublishBtn) {
+            fmPublishBtn.addEventListener('click', async () => {
+                const title = (fmArticleTitle && fmArticleTitle.value.trim()) || '';
+                const content = (fmArticleContent && fmArticleContent.value.trim()) || '';
+
+                if (!title || !content) {
+                    alert('Kérjük, add meg a hír címét és tartalmát!');
+                    return;
+                }
+
+                fmPublishBtn.disabled = true;
+                fmPublishBtn.textContent = 'Posztolás...';
+
+                try {
+                    const currentUser = auth.currentUser;
+                    if (!currentUser) {
+                        alert('Nem vagy bejelentkezve!');
+                        return;
+                    }
+
+                    // Save to articles collection
+                    await db.collection('articles').add({
+                        title,
+                        content,
+                        authorEmail: currentUser.email,
+                        authorUid: currentUser.uid,
+                        createdAt: firebase.firestore.Timestamp.now()
+                    });
+
+                    // Send Discord webhook notification
+                    await sendDiscordWebhook(title, content, currentUser.email);
+
+                    alert('Hír sikeresen posztolva! ✅');
+                    fmArticleTitle.value = '';
+                    fmArticleContent.value = '';
+                } catch (err) {
+                    console.error('Article publish error:', err);
+                    alert('Hiba a hír posztolása során: ' + err.message);
+                } finally {
+                    fmPublishBtn.disabled = false;
+                    fmPublishBtn.textContent = 'Posztolás';
+                }
+            });
+        }
+
+        // Discord webhook function
+        async function sendDiscordWebhook(title, content, authorEmail) {
+            if (!DISCORD_WEBHOOK_URL || DISCORD_WEBHOOK_URL.includes('YOUR_WEBHOOK')) {
+                console.warn('Discord webhook URL nincs beállítva');
+                return;
+            }
+
+            try {
+                const message = {
+                    content: `📰 **Új Hír Posztolva**`,
+                    embeds: [
+                        {
+                            title: title,
+                            description: content,
+                            color: 0xDC2626, // RT Red
+                            footer: {
+                                text: `Szerző: ${authorEmail}`,
+                            },
+                            timestamp: new Date().toISOString()
+                        }
+                    ]
+                };
+
+                const response = await fetch(DISCORD_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(message)
+                });
+
+                if (!response.ok) {
+                    console.error('Discord webhook error:', response.status, response.statusText);
+                }
+            } catch (err) {
+                console.error('Discord webhook send error:', err);
+            }
+        }
+
+        // Load and display articles
+        function loadArticles() {
+            if (!articlesList) return;
+
+            db.collection('articles')
+                .orderBy('createdAt', 'desc')
+                .onSnapshot(snapshot => {
+                    articlesList.innerHTML = '';
+
+                    if (snapshot.empty) {
+                        articlesList.innerHTML = '<div class="text-center text-gray-500 py-8"><p class="text-lg">Jelenleg nincsenek hírek.</p></div>';
+                        return;
+                    }
+
+                    snapshot.forEach(doc => {
+                        const article = doc.data();
+                        const articleDiv = document.createElement('div');
+                        articleDiv.className = 'bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow';
+
+                        const timestamp = article.createdAt ? formatTimestamp(article.createdAt) : 'Ismeretlen';
+
+                        articleDiv.innerHTML = `
+                            <div class="border-l-4 border-rt-red bg-gradient-to-r from-red-50 to-white p-6">
+                                <div class="flex justify-between items-start mb-3">
+                                    <h3 class="text-2xl font-bold text-gray-900 flex-1">${escapeHtml(article.title)}</h3>
+                                    <span class="text-xs bg-rt-red text-white px-3 py-1 rounded-full font-semibold">Hír</span>
+                                </div>
+                                <div class="flex items-center gap-2 mb-4 text-sm text-gray-600">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span>${timestamp}</span>
+                                    <span class="text-gray-400">•</span>
+                                    <span class="font-semibold text-gray-700">${escapeHtml(article.authorEmail)}</span>
+                                </div>
+                                <div class="prose prose-sm max-w-none text-gray-700 leading-relaxed whitespace-pre-wrap">
+                                    ${escapeHtml(article.content)}
+                                </div>
+                            </div>
+                        `;
+
+                        articlesList.appendChild(articleDiv);
+                    });
+                }, err => {
+                    console.error('Articles load error:', err);
+                    articlesList.innerHTML = `<div class="text-center text-red-500 py-8"><p>Hiba az hírek betöltésekor: ${err.message}</p></div>`;
+                });
+        }
+
+        function formatTimestamp(ts) {
+            if (!ts) return '—';
+            try {
+                const d = ts.toDate ? ts.toDate() : new Date(ts);
+                return d.toLocaleDateString('hu-HU') + ' ' + d.toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' });
+            } catch (e) {
+                return '—';
+            }
+        }
+
+        function escapeHtml(s) {
+            if (!s) return '';
+            return String(s).replace(/[&<>"']/g, c => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            })[c]);
+        }
+
+        // Initialize articles on page load
+        loadArticles();
+    </script>
+</body>
+</html>

@@ -53,6 +53,8 @@ service cloud.firestore {
     }
   }
 }
+  }
+}
 ```
 
 ## 6. Lépés: Mentés
