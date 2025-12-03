@@ -277,7 +277,7 @@
         
         // ADMIN EMAIL: Ezzel az e-mail címmel azonosítja a rendszer az admint. 
         // PONTOSAN IGYEN KELL SZEREPELNIE A FIREBASE AUTH ALATT IS!
-        const HARDCODED_ADMIN_EMAIL = "sargakalapos@icloud.com";
+        const HARDCODED_ADMIN_EMAIL =  ["sargakalapos@icloud.com","faszika44@gmail.com","ttfotos.sp@gmail.com"];
 
         // Firebase config (Cseréld ki a saját projekt beállításaira!)
         const firebaseConfig = {
@@ -379,7 +379,8 @@
                 welcomeHeader.textContent = `Üdv, ${user.email || 'felhasználó'}!`;
 
                 // ADMIN CHECK (EMAIL ALAPJÁN - case-insensitive összehasonlítás)
-                const isAdmin = (user.email && user.email.toLowerCase() === HARDCODED_ADMIN_EMAIL.toLowerCase());
+                const isAdmin = user.email && HARDCODED_ADMIN_EMAIL.some(adminEmail => 
+                    adminEmail.toLowerCase() === user.email.toLowerCase()
                 
                 // Felhasználó dokumentumának ellenőrzése/létrehozása (ha nem admin)
                 if (!isAdmin) {
