@@ -381,6 +381,7 @@
                 // ADMIN CHECK (EMAIL ALAPJÁN - case-insensitive összehasonlítás)
                 const isAdmin = user.email && HARDCODED_ADMIN_EMAIL.some(adminEmail => 
                     adminEmail.toLowerCase() === user.email.toLowerCase()
+                );
                 
                 // Felhasználó dokumentumának ellenőrzése/létrehozása (ha nem admin)
                 if (!isAdmin) {
