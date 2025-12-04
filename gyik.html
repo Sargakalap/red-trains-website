@@ -41,9 +41,370 @@
             <nav class="flex items-center gap-4">
                 <a href="index.html" class="text-white/90 hover:text-white px-3 py-2 rounded-md">Főoldal</a>
                 <a href="portal.html" class="text-white/90 hover:text-white px-3 py-2 rounded-md">Portál</a>
+                <a href="gyik.html" class="text-white/90 hover:text-white px-3 py-2 rounded-md">GYIK</a>
+            </nav>
+        </div>
+    </header>
 
-                <section class="flex items-center" id="welcome">
-                    <div>
-                        <h1 class=""></h1>
-                    </div>
-                </section>
+    <main class="max-w-6xl mx-auto p-6">
+        <h1 class="text-3xl font-bold mb-8 text-slate-800">Gyakran Ismételt Kérdések (GYIK)</h1>
+
+        <div class="space-y-6">
+            <!-- FAQ Item 1 -->
+            <div class="bg-white rounded-xl p-6 border border-gray-100 soft-card">
+                <h3 class="text-xl font-semibold text-indigo-700 cursor-pointer hover:text-indigo-900" onclick="toggleAnswer(this)">
+                    ❓ Hogyan tudom módosítani a jelszavamat?
+                </h3>
+                <div class="answer hidden mt-4 text-gray-700">
+                    <p>A jelszó módosításához jelentkezz be a portálra, majd kattints a beállítások ikonra. Ott megtalálod a jelszóváltoztatás lehetőséget. A régi jelszót meg kell adnod az új beállítása előtt.</p>
+                </div>
+            </div>
+
+            <!-- FAQ Item 2 -->
+            <div class="bg-white rounded-xl p-6 border border-gray-100 soft-card">
+                <h3 class="text-xl font-semibold text-indigo-700 cursor-pointer hover:text-indigo-900" onclick="toggleAnswer(this)">
+                    ❓ Mit jelent a "Függőben" státusz a beosztásoknál?
+                </h3>
+                <div class="answer hidden mt-4 text-gray-700">
+                    <p>A "Függőben" státusz azt jelenti, hogy az adminisztrátor hozzárendelt egy beosztást, de te még nem erősítette meg vagy utasította el. A portálod "Beosztások" szekcióban tudod megválasztani, hogy elfogadod, elutasítod, vagy talán szóba jöhet-e.</p>
+                </div>
+            </div>
+
+            <!-- FAQ Item 3 -->
+            <div class="bg-white rounded-xl p-6 border border-gray-100 soft-card">
+                <h3 class="text-xl font-semibold text-indigo-700 cursor-pointer hover:text-indigo-900" onclick="toggleAnswer(this)">
+                    ❓ Hogyan küldhetek üzeneteket az adminisztrátornak?
+                </h3>
+                <div class="answer hidden mt-4 text-gray-700">
+                    <p>A portálra bejelentkezve a "Felhasználói kezelőfelület" alatt találod a "Üzenet az Adminoknak" szekciót. Itt írhatod meg az üzeneted és elküldheted az adminisztrátornak. Az adminisztrátor válaszait az "Üzenetek az Adminoktól" szekcióban fogod látni.</p>
+                </div>
+            </div>
+
+            <!-- FAQ Item 4 -->
+            <div class="bg-white rounded-xl p-6 border border-gray-100 soft-card">
+                <h3 class="text-xl font-semibold text-indigo-700 cursor-pointer hover:text-indigo-900" onclick="toggleAnswer(this)">
+                    ❓ Mely hírek érhető el a Forgalmi hírek oldalon?
+                </h3>
+                <div class="answer hidden mt-4 text-gray-700">
+                    <p>A Forgalmi hírek oldalon az utazásra vonatkozó fontosabb közlemények találhatóak: járművezetési útlezárások, szolgáltatásbetegségek, rendkívüli szolgáltatási változások és az RT Zrt. által közzétett közlemények.</p>
+                </div>
+            </div>
+
+            <!-- FAQ Item 5 -->
+            <div class="bg-white rounded-xl p-6 border border-gray-100 soft-card">
+                <h3 class="text-xl font-semibold text-indigo-700 cursor-pointer hover:text-indigo-900" onclick="toggleAnswer(this)">
+                    ❓ Nem tudom bejelentkezni a portálra. Mit tegyek?
+                </h3>
+                <div class="answer hidden mt-4 text-gray-700">
+                    <p>Ellenőrizd, hogy helyesen írtad-e be az email címet és jelszót. Ha biztosan helyes, akkor lehet, hogy az email cím vagy jelszó nem létezik az adatbázisban. Küldj egy üzenetet az adminisztrátornak, hogy segítsenek.</p>
+                </div>
+            </div>
+
+            <!-- FAQ Item 6 -->
+            <div class="bg-white rounded-xl p-6 border border-gray-100 soft-card">
+                <h3 class="text-xl font-semibold text-indigo-700 cursor-pointer hover:text-indigo-900" onclick="toggleAnswer(this)">
+                    ❓ Hogyan tudok saját beosztásomat módosítani?
+                </h3>
+                <div class="answer hidden mt-4 text-gray-700">
+                    <p>Az adminisztrátor hozzárendel neked beosztásokat. Te csak a státuszát tudod módosítani (elfogadás, elutasítás, talán). Az adminisztrátor az "Shift és Rang Hozzárendelés" szekcióban módosíthat beosztást vagy rangot.</p>
+                </div>
+            </div>
+
+            <!-- FAQ Item 7 -->
+            <div class="bg-white rounded-xl p-6 border border-gray-100 soft-card">
+                <h3 class="text-xl font-semibold text-indigo-700 cursor-pointer hover:text-indigo-900" onclick="toggleAnswer(this)">
+                    ❓ Milyen böngészőkben működik a portál?
+                </h3>
+                <div class="answer hidden mt-4 text-gray-700">
+                    <p>A portál modern böngészőkben működik: Chrome, Firefox, Safari, Edge. Ajánlott az utolsó verzió használata a legjobb felhasználói élményért.</p>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl p-6 border border-gray-100 soft-card">
+                <h3 class="text-xl font-semibold text-indigo-700 cursor-pointer hover:text-indigo-900" onclick="toggleAnswer(this)">
+                    ❓ Milyen hibakódok vannak?
+                </h3>
+                <div class="answer hidden mt-4 text-gray-700">
+                    <p>A rendszer több hibakódot tud kiírni. Íme az összes (Megjegyzés: Nem mindegyik vonatkozik ide) </p>
+                    <div class="overflow-x-auto">
+  <table class="min-w-full border border-gray-300 text-sm">
+    <thead class="bg-gray-100">
+      <tr>
+        <th class="border-b border-gray-300 px-4 py-2 text-left font-semibold">Hiba</th>
+        <th class="border-b border-gray-300 px-4 py-2 text-left font-semibold">Leírás </th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-200">
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/claims-too-large</td>
+        <td class="px-4 py-2">A setCustomUserClaims() függvénynek átadott claims adathalmaz meghaladja a megengedett 1000 bájtos méretet.</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/email-already-exists</td>
+        <td class="px-4 py-2">A megadott e-mail cím már használatban van egy másik felhasználónál. Minden felhasználónak egyedi e-mail címmel kell rendelkeznie.</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/id-token-expired</td>
+        <td class="px-4 py-2">A megadott Firebase ID token lejárt.</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/id-token-revoked</td>
+        <td class="px-4 py-2">A Firebase ID tokent visszavonták.</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/insufficient-permission</td>
+        <td class="px-4 py-2">A használt hitelesítő adat nem rendelkezik elegendő jogosultsággal a kért Authentication erőforrás eléréséhez.</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/internal-error</td>
+        <td class="px-4 py-2">A hitelesítési szerver váratlan hibát észlelt a kérés feldolgozása közben.</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/invalid-argument</td>
+        <td class="px-4 py-2">Érvénytelen argumentum került átadásra egy Authentication metódusnak.</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/invalid-claims</td>
+        <td class="px-4 py-2">A setCustomUserClaims() számára megadott claim-ek érvénytelenek.</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/invalid-continue-uri</td>
+        <td class="px-4 py-2">A continue URL-nek érvényes URL karakterláncnak kell lennie.</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/invalid-creation-time</td>
+        <td class="px-4 py-2">A létrehozási időnek érvényes UTC dátum karakterláncnak kell lennie.</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/invalid-credential</td>
+        <td class="px-4 py-2">A hitelesítéshez használt credential nem alkalmas a művelet végrehajtására.</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/invalid-disabled-field</td>
+        <td class="px-4 py-2">A disabled tulajdonság értéke érvénytelen. Logikai érték kell legyen.</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/invalid-display-name</td>
+        <td class="px-4 py-2">A displayName tulajdonság értéke érvénytelen. Nem üres string kell legyen.</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/invalid-dynamic-link-domain</td>
+        <td class="px-4 py-2">A megadott dinamikus link domain nincs konfigurálva vagy engedélyezve.</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/invalid-email</td>
+        <td class="px-4 py-2">A megadott e-mail cím érvénytelen.</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/invalid-email-verified</td>
+        <td class="px-4 py-2">Az emailVerified értéke érvénytelen. Logikai érték kell legyen.</td>
+      </tr>
+
+      <!-- A teljes lista nagyon hosszú, úgyhogy itt folytatódik: -->
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/invalid-hash-algorithm</td>
+        <td class="px-4 py-2">A hash algoritmusnak a támogatott listában kell szerepelnie.</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/invalid-hash-block-size</td>
+        <td class="px-4 py-2">A hash blokkméret érvénytelen.</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/invalid-hash-derived-key-length</td>
+        <td class="px-4 py-2">A hash derived key hossza érvénytelen.</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/invalid-hash-key</td>
+        <td class="px-4 py-2">A hash kulcsnak érvényes byte buffernek kell lennie.</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/invalid-hash-memory-cost</td>
+        <td class="px-4 py-2">A hash memória költsége érvénytelen.</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/invalid-hash-parallelization</td>
+        <td class="px-4 py-2">A hash párhuzamosítás értéke érvénytelen.</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/invalid-hash-rounds</td>
+        <td class="px-4 py-2">A hash körök száma érvénytelen.</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/invalid-hash-salt-separator</td>
+        <td class="px-4 py-2">A só szeparátor mezőnek érvényes byte buffernek kell lennie.</td>
+      </tr>
+
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/invalid-id-token</td>
+        <td class="px-4 py-2">A megadott ID token érvénytelen Firebase ID token.</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/invalid-last-sign-in-time</td>
+        <td class="px-4 py-2">A legutóbbi bejelentkezési idő érvénytelen formátumú.</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/invalid-page-token</td>
+        <td class="px-4 py-2">A megadott page token érvénytelen.</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/invalid-password</td>
+        <td class="px-4 py-2">A jelszónak min. 6 karakteres stringnek kell lennie.</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/invalid-password-hash</td>
+        <td class="px-4 py-2">A jelszó hash értéke érvénytelen byte buffer.</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/invalid-password-salt</td>
+        <td class="px-4 py-2">A jelszó salt értéke érvénytelen byte buffer.</td>
+      </tr>
+
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/invalid-phone-number</td>
+        <td class="px-4 py-2">A telefonszám érvénytelen (E.164 formátum szükséges).</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/invalid-photo-url</td>
+        <td class="px-4 py-2">A photoURL érvénytelen URL.</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/invalid-provider-data</td>
+        <td class="px-4 py-2">A providerData érvénytelen UserInfo objektum tömb.</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/invalid-provider-id</td>
+        <td class="px-4 py-2">A providerId érvénytelen.</td>
+      </tr>
+
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/invalid-oauth-responsetype</td>
+        <td class="px-4 py-2">Csak egy OAuth responseType lehet true.</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/invalid-session-cookie-duration</td>
+        <td class="px-4 py-2">A session cookie időtartama 5 perc – 2 hét között lehet.</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/invalid-uid</td>
+        <td class="px-4 py-2">A uid max. 128 karakteres, nem üres string kell legyen.</td>
+      </tr>
+
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/invalid-user-import</td>
+        <td class="px-4 py-2">Az importálandó felhasználói rekord érvénytelen.</td>
+      </tr>
+
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/maximum-user-count-exceeded</td>
+        <td class="px-4 py-2">A felhasználóimportálási mennyiség meghaladja a maximumot.</td>
+      </tr>
+
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/missing-android-pkg-name</td>
+        <td class="px-4 py-2">Android csomagnév szükséges.</td>
+      </tr>
+
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/missing-continue-uri</td>
+        <td class="px-4 py-2">A kérésből hiányzik az érvényes continue URL.</td>
+      </tr>
+
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/missing-hash-algorithm</td>
+        <td class="px-4 py-2">Jelszó hash importhoz meg kell adni a hash algoritmust.</td>
+      </tr>
+
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/missing-ios-bundle-id</td>
+        <td class="px-4 py-2">Az iOS Bundle ID hiányzik.</td>
+      </tr>
+
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/missing-uid</td>
+        <td class="px-4 py-2">Ehhez a művelethez uid szükséges.</td>
+      </tr>
+
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/missing-oauth-client-secret</td>
+        <td class="px-4 py-2">OIDC kód folyamathoz OAuth kliens titok kell.</td>
+      </tr>
+
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/operation-not-allowed</td>
+        <td class="px-4 py-2">Ez a bejelentkezési mód nincs engedélyezve.</td>
+      </tr>
+
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/phone-number-already-exists</td>
+        <td class="px-4 py-2">A megadott telefonszám már használatban van.</td>
+      </tr>
+
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/project-not-found</td>
+        <td class="px-4 py-2">A credential-hoz nem tartozik Firebase projekt.</td>
+      </tr>
+
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/reserved-claims</td>
+        <td class="px-4 py-2">Egy vagy több custom claim fenntartott (pl. sub, iat, iss, exp...).</td>
+      </tr>
+
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/session-cookie-expired</td>
+        <td class="px-4 py-2">A session cookie lejárt.</td>
+      </tr>
+
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/session-cookie-revoked</td>
+        <td class="px-4 py-2">A session cookie-t visszavonták.</td>
+      </tr>
+
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/too-many-requests</td>
+        <td class="px-4 py-2">Túl sok kérés érkezett.</td>
+      </tr>
+
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/uid-already-exists</td>
+        <td class="px-4 py-2">A megadott uid már használatban van.</td>
+      </tr>
+
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/unauthorized-continue-uri</td>
+        <td class="px-4 py-2">A continue URL domainje nincs whitelistelve.</td>
+      </tr>
+
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/user-disabled</td>
+        <td class="px-4 py-2">A felhasználói fiók le van tiltva.</td>
+      </tr>
+
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-4 py-2">auth/user-not-found</td>
+        <td class="px-4 py-2">A megadott azonosítóhoz nem tartozik felhasználó.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+                </div>
+            </div>
+
+                    <div class="bg-white rounded-xl p-6 border border-gray-100 soft-card">
+                <h3 class="text-xl font-semibold text-indigo-700 cursor-pointer hover:text-indigo-900" onclick="toggleAnswer(this)">
+                    ❓ Tudsz nekem valami vicceset mutatni?
+                </h3>
+                <div class="answer hidden mt-4 text-gray-700">
+                    <p>Persze! <a href="https://www.youtube.com/watch?v=xvFZjo5PgG0">Kattints ide</a> és látni fogsz valami vicceset!</p>
+                </div>
+        </div>
+    </main>
+
+    <script>
+        function toggleAnswer(element) {
+            const answer = element.nextElementSibling;
+            answer.classList.toggle('hidden');
+            element.classList.toggle('text-indigo-900');
+        }
+    </script>
+</body>
+</html>
